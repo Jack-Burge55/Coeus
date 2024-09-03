@@ -7,6 +7,12 @@ const app = express()
 // connectDB
 const connectDB = require("./db/connect")
 const authenticateUser = require("./middleware/auth")
+const cors = require("cors")
+const corsOptions = {
+  origin: "*",
+  credentials: true,
+  optionSuccessStatus: 200
+}
 
 // routers
 const loginRouter = require("./routes/login")
@@ -16,6 +22,7 @@ const registerRouter = require("./routes/register")
 const notFoundMiddleware = require('./middleware/not-found');
 const errorHandlerMiddleware = require("./middleware/error-handler")
 
+app.use(cors(corsOptions))
 // static assets
 app.use(express.static("./public"))
 // parse form data
@@ -32,7 +39,7 @@ app.use("/api/v1/auth/register", registerRouter)
 app.use(notFoundMiddleware)
 app.use(errorHandlerMiddleware)
 
-const port = 3000
+const port = process.env.PORT_NUMBER || 3000
 
 const start = async () => {
     try {
