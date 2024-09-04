@@ -6,9 +6,9 @@ const Register = ({ setCoeusUser }) => {
   const navigate = useNavigate();
 
   const registerClick = async () => {
-    const usernameInput = document.getElementById("usernameInput");
-    const emailInput = document.getElementById("emailInput");
-    const passwordInput = document.getElementById("passwordInput");
+    const usernameInput = document.getElementById("username");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
     const username = usernameInput.value;
     const email = emailInput.value;
     const password = passwordInput.value;
@@ -50,9 +50,19 @@ const Register = ({ setCoeusUser }) => {
   return (
     <>
       <h2>Register page</h2>
-      <input placeholder="Username" id="usernameInput"></input>
-      <input placeholder="Email" id="emailInput"></input>
-      <input placeholder="Password" id="passwordInput"></input>
+      <form>
+        <label htmlFor="username">Username</label>
+        <br />
+        <input type="text" id="username" name="username" />
+        <br />
+        <label htmlFor="email">Email</label>
+        <br />
+        <input type="text" id="email" name="email" />
+        <br />
+        <label htmlFor="password">Password</label>
+        <br />
+        <input type="text" id="password" name="password" />
+      </form>
       <button onClick={() => registerClick()}>Register to Coeus</button>
       <button onClick={() => navigate("/login")}>
         Already registered? Log in instead
