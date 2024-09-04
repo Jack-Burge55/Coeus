@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Login = ({setCoeusUser}) => {
+const Login = ({ setCoeusUser }) => {
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -28,14 +28,15 @@ const Login = ({setCoeusUser}) => {
             console.log(response);
 
             if (response.status === 401) {
-              setErrorMsg("User cannot be found, please try again")
+              setErrorMsg("User cannot be found, please try again");
+              throw new Error("No User found");
             }
-            return response.json()
+            return response.json();
           })
           .then((data) => {
-            setCoeusUser(data.user.username)
-            localStorage.setItem("coeusUser", data.user.username)
-            navigate("/")
+            setCoeusUser(data.user?.userId);
+            localStorage.setItem("coeusUser", data.user?.userId);
+            navigate("/");
           })
           .catch((err) => console.log(err));
       } catch (error) {
