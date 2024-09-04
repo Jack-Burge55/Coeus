@@ -1,4 +1,4 @@
-require("dotenv").config()
+require("dotenv").config({path: '../.env'})
 require("express-async-errors")
 
 const express = require("express")
@@ -43,7 +43,7 @@ app.use("/api/v1/users", usersRouter)
 app.use(notFoundMiddleware)
 app.use(errorHandlerMiddleware)
 
-const port = process.env.PORT_NUMBER || 3000
+const port = process.env.PORT_NUMBER || 1000
 
 const start = async () => {
     try {
