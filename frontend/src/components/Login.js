@@ -6,8 +6,8 @@ const Login = ({ setCoeusUser }) => {
   const [errorMsg, setErrorMsg] = useState("");
 
   const loginClick = async () => {
-    const usernameInput = document.getElementById("usernameInput");
-    const passwordInput = document.getElementById("passwordInput");
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
     const username = usernameInput.value;
     const password = passwordInput.value;
     if (username && password) {
@@ -48,9 +48,17 @@ const Login = ({ setCoeusUser }) => {
   return (
     <>
       <h2>Login page</h2>
-      <input placeholder="Username" id="usernameInput"></input>
-      <input placeholder="Password" id="passwordInput"></input>
+      <form>
+        <label for="username">Username</label>
+        <br />
+        <input type="text" id="username" name="username" />
+        <br />
+        <label for="password">Password</label>
+        <br />
+        <input type="text" id="password" name="password" />
+      </form>
       <button onClick={() => loginClick()}>Log in to Coeus</button>
+
       <button id="registerButton" onClick={() => navigate("/register")}>
         No account? Register here
       </button>

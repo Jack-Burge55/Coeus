@@ -73,7 +73,7 @@ describe("POST /api/v1/auth/login", () => {
     const res = await request(app).post("/api/v1/auth/login").send(currentUser);
 
     expect(res.statusCode).toBe(200);
-    expect(res._body.user.name).toBe(`person${registerId}`);
+    expect(res._body.user.username).toBe(`person${registerId}`);
   });
 
   it("should not allow us to login an existing user with an incorrect username", async () => {
