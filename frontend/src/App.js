@@ -1,7 +1,7 @@
 import "./App.css";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
-import { Home, Register, Login } from "./components";
+import { Home, Register, Login, Profile } from "./components";
 import { useEffect, useState } from "react";
 
 function App() {
@@ -25,7 +25,18 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        <Route exact path="/" element={<Home setCoeusUser={setCoeusUser} />} />
+        <Route
+          exact
+          path="/"
+          element={<Home setCoeusUser={setCoeusUser} coeusUser={coeusUser} />}
+        />
+        <Route
+          exact
+          path="/profile/:id"
+          element={
+            <Profile setCoeusUser={setCoeusUser} coeusUser={coeusUser} />
+          }
+        />
         <Route path="/login" element={<Login setCoeusUser={setCoeusUser} />} />
         <Route
           path="/register"

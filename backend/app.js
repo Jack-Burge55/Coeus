@@ -17,6 +17,8 @@ const corsOptions = {
 // routers
 const loginRouter = require("./routes/login")
 const registerRouter = require("./routes/register")
+const deleteRouter = require("./routes/delete")
+const usersRouter = require("./routes/users")
 
 // error handler
 const notFoundMiddleware = require('./middleware/not-found');
@@ -35,6 +37,8 @@ app.use(express.json())
 // app.use("/api/v1/auth", loginRouter, registerRouter)
 app.use("/api/v1/auth/login", loginRouter)
 app.use("/api/v1/auth/register", registerRouter)
+app.use("/api/v1/auth/delete", deleteRouter)
+app.use("/api/v1/users", usersRouter)
 
 app.use(notFoundMiddleware)
 app.use(errorHandlerMiddleware)

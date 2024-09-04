@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"
-// require("dotenv").config()
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const Register = ({setCoeusUser}) => {
-  const [userCreated, setUserCreated] = useState("")
+const Register = ({ setCoeusUser }) => {
+  const [errorMsg, setErrorMsg] = useState("");
+  const navigate = useNavigate();
 
   const registerClick = async () => {
     const usernameInput = document.getElementById("usernameInput");
@@ -27,12 +27,17 @@ const Register = ({setCoeusUser}) => {
             "Content-type": "application/json; charset=UTF-8",
           },
         })
-          .then((response) => response.json())
+          .then((response) => {
+            if (response.status === 400) {
+              setErrorMsg("User already exists, please try again");
+            }
+            return response.json();
+          })
           .then((data) => {
-            if (data.userCreated) {
-              setCoeusUser(data.user.username)
-              localStorage.setItem("coeusUser", data.user.username)
-              setUserCreated(true)
+            if (data.user) {
+              setCoeusUser(data.user.userID);
+              localStorage.setItem("coeusUser", data.user.userID);
+              navigate("/");
             }
           })
           .catch((err) => console.log(err));
@@ -42,25 +47,17 @@ const Register = ({setCoeusUser}) => {
     }
   };
 
-  const navigate = useNavigate();
- 
-  useEffect(() => {
-    // Checking if user is not loggedIn
-    if (userCreated) {
-      navigate("/");
-    }
-  }, [navigate, userCreated]);
-
-
   return (
     <>
-
       <h2>Register page</h2>
       <input placeholder="Username" id="usernameInput"></input>
       <input placeholder="Email" id="emailInput"></input>
       <input placeholder="Password" id="passwordInput"></input>
       <button onClick={() => registerClick()}>Register to Coeus</button>
-      <button onClick={() => navigate("/login")}>Already registered? Log in instead</button>
+      <button onClick={() => navigate("/login")}>
+        Already registered? Log in instead
+      </button>
+      {errorMsg && <h3>{errorMsg}</h3>}
     </>
   );
 };
