@@ -5,14 +5,43 @@ const Register = ({ setCoeusUser }) => {
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
 
-  const registerClick = async () => {
-    const usernameInput = document.getElementById("username");
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-    const username = usernameInput.value;
-    const email = emailInput.value;
-    const password = passwordInput.value;
-    if (username && password) {
+  const validateForm = async () => {
+    const form = document.getElementById("registerForm");
+    const formFieldArray = Array.from(form.getElementsByTagName("input"));
+
+    let noErrors = true;
+    formFieldArray.forEach((field) => {
+      
+      let fieldError = "";
+      if (field.minLength > 0) {
+        if (field.value < field.minLength) {
+          fieldError = `${field.name} must be at least ${field.minLength} characters long`;
+        }
+      }
+      if (field.hasAttribute("data-mustmatch")) {
+        const matchingField = document.getElementById(field.getAttribute("data-mustmatch"))
+        
+        if (matchingField.value !== field.value) {
+          fieldError = `${field.name} does not match ${matchingField.name}`
+        }
+      }
+      if (field.required && field.value === "") {
+        fieldError = `${field.name} is a required field`;
+      }
+      fieldError
+        ? field.classList.add("has-error")
+        : field.classList.remove("has-error");
+      if (fieldError) {
+        noErrors = false;
+      }
+      const errorMsg = document.getElementById(`${field.id}Error`);
+      errorMsg.innerText = fieldError;
+    });
+
+    const username = document.getElementById("username").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    if (noErrors) {
       const request = {
         username,
         email,
@@ -50,20 +79,37 @@ const Register = ({ setCoeusUser }) => {
   return (
     <>
       <h2>Register page</h2>
-      <form>
-        <label for="username">Username</label>
+      <form id="registerForm">
+        <label htmlFor="username">Username</label>
         <br />
-        <input type="text" id="username" name="username" />
+        <input type="text" id="username" name="Username" required />
+        <p id="usernameError"></p>
+        <label htmlFor="email">Email</label>
         <br />
-        <label for="email">Email</label>
+        <input type="text" id="email" name="Email Address" required />
+        <p id="emailError"></p>
+        <label htmlFor="password">Password</label>
         <br />
-        <input type="text" id="email" name="email" />
+        <input
+          type="text"
+          id="password"
+          name="Password"
+          required
+          minLength="6"
+        />
+        <p id="passwordError"></p>
+        <label htmlFor="passwordConfirmation">Password Confirmation</label>
         <br />
-        <label for="password">Password</label>
-        <br />
-        <input type="text" id="password" name="password" />
+        <input
+          type="text"
+          id="passwordConfirmation"
+          name="Password Confirmation"
+          required
+          data-mustmatch="password"
+        />
+        <p id="passwordConfirmationError"></p>
       </form>
-      <button onClick={() => registerClick()}>Register to Coeus</button>
+      <button onClick={() => validateForm()}>Register to Coeus</button>
       <button onClick={() => navigate("/login")}>
         Already registered? Log in instead
       </button>
