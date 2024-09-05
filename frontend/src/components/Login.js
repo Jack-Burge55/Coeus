@@ -6,11 +6,29 @@ const Login = ({ setCoeusUser }) => {
   const [errorMsg, setErrorMsg] = useState("");
 
   const loginClick = async () => {
-    const usernameInput = document.getElementById("username");
-    const passwordInput = document.getElementById("password");
-    const username = usernameInput.value;
-    const password = passwordInput.value;
-    if (username && password) {
+    const form = document.getElementById("loginForm");
+    const formFieldArray = Array.from(form.getElementsByTagName("input"));
+
+    let noErrors = true;
+    formFieldArray.forEach((field) => {
+      let fieldError = "";
+      if (field.required && field.value === "") {
+        fieldError = `${field.id} is a required field`;
+      }
+      fieldError
+        ? field.classList.add("has-error")
+        : field.classList.remove("has-error");
+      if (fieldError) {
+        noErrors = false;
+      }
+      const errorMsg = document.getElementById(`${field.id}Error`);
+      errorMsg.innerText = fieldError;
+    });
+    
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    if (noErrors) {
       const request = {
         username,
         password,
@@ -48,14 +66,20 @@ const Login = ({ setCoeusUser }) => {
   return (
     <>
       <h2>Login page</h2>
-      <form>
-        <label for="username">Username</label>
+      <form id="loginForm">
+        <label htmlFor="username">Username</label>
         <br />
-        <input type="text" id="username" name="username" />
+        <input type="text" id="username" name="Username" required />
+        <p id="usernameError"></p>
+        <label htmlFor="password">Password</label>
         <br />
-        <label for="password">Password</label>
-        <br />
-        <input type="text" id="password" name="password" />
+        <input
+          type="text"
+          id="password"
+          name="Password"
+          required
+        />
+        <p id="passwordError"></p>
       </form>
       <button onClick={() => loginClick()}>Log in to Coeus</button>
 
