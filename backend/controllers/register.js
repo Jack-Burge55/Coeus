@@ -6,8 +6,7 @@ const registerUser = async (req, res) => {
   const token = user.createJWT();
   res.status(StatusCodes.CREATED).json({
     user: { username: user.username, userID: user._id },
-    token,
-    userCreated: true,
+    token
   });
 };
 
