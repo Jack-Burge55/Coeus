@@ -6,6 +6,7 @@ const Home = ({ setCoeusUser, coeusUser }) => {
   const signOut = () => {
     setCoeusUser("");
     localStorage.removeItem("coeusUser");
+    localStorage.removeItem("userToken")
     navigate("/login");
   };
 

@@ -66,6 +66,7 @@ const Register = ({ setCoeusUser }) => {
             if (data.user) {
               setCoeusUser(data.user.userID);
               localStorage.setItem("coeusUser", data.user.userID);
+              localStorage.setItem("userToken", data.token)
               navigate("/");
             }
           })

@@ -54,6 +54,7 @@ const Login = ({ setCoeusUser }) => {
           .then((data) => {
             setCoeusUser(data.user?.userId);
             localStorage.setItem("coeusUser", data.user?.userId);
+            localStorage.setItem("userToken", data.token)
             navigate("/");
           })
           .catch((err) => console.log(err));
