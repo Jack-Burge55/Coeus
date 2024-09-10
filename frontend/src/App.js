@@ -1,7 +1,7 @@
 import "./App.css";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
-import { Home, Register, Login, Profile } from "./components";
+import { Home, Register, Login, Profile, FindUsers } from "./components";
 import { useEffect, useState } from "react";
 
 function App() {
@@ -29,6 +29,11 @@ function App() {
           exact
           path="/"
           element={<Home setCoeusUser={setCoeusUser} coeusUser={coeusUser} />}
+        />
+        <Route
+          exact
+          path="/find-users"
+          element={<FindUsers setCoeusUser={setCoeusUser} coeusUser={coeusUser} />}
         />
         <Route
           exact
