@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../UserContext";
 
-const Profile = ({ setCoeusUser, coeusUser }) => {
+const Profile = ({ setCoeusUser }) => {
+  const coeusUser = useContext(UserContext)
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState("");
   const [videos, setVideos] = useState([]);

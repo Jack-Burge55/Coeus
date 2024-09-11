@@ -3,6 +3,7 @@ import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import { Home, Register, Login, Profile, FindUsers } from "./components";
 import { useEffect, useState } from "react";
+import { UserContext } from "./UserContext";
 
 function App() {
   const location = useLocation();
@@ -18,9 +19,6 @@ function App() {
     ) {
       navigate("/login");
     }
-  }, [location.pathname, navigate]);
-
-  useEffect(() => {
     try {
       if (localStorage.userId && localStorage.userToken) {
         // get user information
@@ -50,34 +48,36 @@ function App() {
     } catch (error) {
       console.log(error);
     }
-  }, []);
+  }, [location.pathname, navigate]);
 
   return (
     <div className="App">
-      <Routes>
-        <Route
-          exact
-          path="/"
-          element={<Home setCoeusUser={setCoeusUser} coeusUser={coeusUser} />}
-        />
-        <Route
-          exact
-          path="/find-users"
-          element={
-            <FindUsers setCoeusUser={setCoeusUser} coeusUser={coeusUser} />
-          }
-        />
-        <Route
-          exact
-          path="/profile/:id"
-          element={
-            <Profile setCoeusUser={setCoeusUser} coeusUser={coeusUser} />
-          }
-        />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="*" element={<h1>404 not found</h1>}></Route>
-      </Routes>
+      <UserContext.Provider value={coeusUser}>
+        <Routes>
+          <Route
+            exact
+            path="/"
+            element={<Home setCoeusUser={setCoeusUser}/>}
+          />
+          <Route
+            exact
+            path="/find-users"
+            element={
+              <FindUsers setCoeusUser={setCoeusUser}/>
+            }
+          />
+          <Route
+            exact
+            path="/profile/:id"
+            element={
+              <Profile setCoeusUser={setCoeusUser}/>
+            }
+          />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="*" element={<h1>404 not found</h1>}></Route>
+        </Routes>
+      </UserContext.Provider>
     </div>
   );
 }

@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../UserContext";
 
-const FindUsers = ({ setCoeusUser, coeusUser }) => {
+const FindUsers = ({ setCoeusUser }) => {
   const navigate = useNavigate();
+  const coeusUser = useContext(UserContext)
   
   const [userSuggestions, setUserSuggestions] = useState(null);
   const [errorMsg, setErrorMsg] = useState([]);
