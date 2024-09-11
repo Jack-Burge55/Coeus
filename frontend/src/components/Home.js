@@ -8,8 +8,9 @@ const Home = ({ setCoeusUser, coeusUser }) => {
   }
 
   const signOut = () => {
-    setCoeusUser("");
+    setCoeusUser(null);
     localStorage.removeItem("userToken");
+    localStorage.removeItem("userId");
     navigate("/login");
   };
 

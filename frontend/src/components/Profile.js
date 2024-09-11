@@ -19,15 +19,13 @@ const Profile = ({ setCoeusUser, coeusUser }) => {
         },
       })
         .then((response) => {
-          if (response.status === 400) {
+          if (response.status !== 200) {
             setErrorMsg("User profile does not exist");
-          }
-          if (response.status === 200) {
-            setErrorMsg("");
-          }
+            throw new Error("no user found")
+          }          
           return response.json();
         })
-        .then((data) => {
+        .then((data) => {          
           setProfileInfo(data)
           const videoUrl = new URL(
             `http://localhost:1234/api/v1/videos/${thisProfile}`
@@ -53,7 +51,7 @@ const Profile = ({ setCoeusUser, coeusUser }) => {
               setVideos(data.videos);
             });
         })
-        .catch((err) => console.log(err));
+        .catch((err) => err);
     } catch (error) {
       console.log(error);
     }
@@ -113,9 +111,10 @@ const Profile = ({ setCoeusUser, coeusUser }) => {
     }
   };
 
+  if (errorMsg) return <h2>{errorMsg}</h2>
+
   return (coeusUser && profileInfo) ? (
     <>
-      {!errorMsg ? (
         <div>
           <h1>{profileInfo.username}'s profile</h1>
           {videos.length > 0 &&
@@ -151,11 +150,6 @@ const Profile = ({ setCoeusUser, coeusUser }) => {
           )}
           <button onClick={() => navigate("/")}>Back to home</button>
         </div>
-      ) : (
-        <div>
-          <h3>No user exists for what you're looking for :(</h3>
-        </div>
-      )}
     </>
   ) : (
     <h2>Loading...</h2>

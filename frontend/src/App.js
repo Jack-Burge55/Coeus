@@ -8,18 +8,22 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const [coeusUser, setCoeusUser] = useState(null);
-  
+
+  useEffect(() => {
+    // if no user set in local storage and page not login or register, redirect to login
+    if (
+      !localStorage.userId &&
+      location.pathname !== "/login" &&
+      location.pathname !== "/register"
+    ) {
+      navigate("/login");
+    }
+  }, [location.pathname, navigate]);
+
   useEffect(() => {
     try {
-      // if no user set in local storage and page not login or register, redirect to login      
-      if (
-        !localStorage.userId &&
-        location.pathname !== "/login" &&
-        location.pathname !== "/register"
-      ) {
-        navigate("/login");
-      } 
       if (localStorage.userId && localStorage.userToken) {
+        // get user information
         const url = new URL(
           `http://localhost:1234/api/v1/users/${localStorage.userId}`
         );
@@ -33,7 +37,6 @@ function App() {
           .then((response) => {
             if (response.status === 400) {
               console.log(response);
-              
             }
             return response.json();
           })
@@ -47,7 +50,7 @@ function App() {
     } catch (error) {
       console.log(error);
     }
-  }, [location.pathname, navigate]);
+  }, []);
 
   return (
     <div className="App">
@@ -71,11 +74,8 @@ function App() {
             <Profile setCoeusUser={setCoeusUser} coeusUser={coeusUser} />
           }
         />
-        <Route path="/login" element={<Login/>} />
-        <Route
-          path="/register"
-          element={<Register/>}
-        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="*" element={<h1>404 not found</h1>}></Route>
       </Routes>
     </div>
