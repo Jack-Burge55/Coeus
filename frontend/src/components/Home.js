@@ -9,13 +9,12 @@ const Home = ({ setCoeusUser, coeusUser }) => {
 
   const signOut = () => {
     setCoeusUser("");
-    localStorage.removeItem("coeusUser");
-    localStorage.removeItem("userToken")
+    localStorage.removeItem("userToken");
     navigate("/login");
   };
 
   const goToProfile = () => {
-    navigate(`/profile/${coeusUser}`);
+    navigate(`/profile/${coeusUser.userId}`);
   };
 
   return (

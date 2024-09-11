@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 const Profile = ({ setCoeusUser, coeusUser }) => {
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState("");
-  const [videos, setVideos] = useState([])  
-
+  const [videos, setVideos] = useState([]);
+  const [profileInfo, setProfileInfo] = useState(null)  
   const thisProfile = window.location.href.split("profile/")[1];
 
   useEffect(() => {
@@ -15,6 +15,7 @@ const Profile = ({ setCoeusUser, coeusUser }) => {
         method: "GET",
         headers: {
           "Content-type": "application/json; charset=UTF-8",
+          authorisation: `Bearer ${localStorage.userToken}`,
         },
       })
         .then((response) => {
@@ -26,28 +27,31 @@ const Profile = ({ setCoeusUser, coeusUser }) => {
           }
           return response.json();
         })
-        .then(() => {
-          const videoUrl = new URL(`http://localhost:1234/api/v1/videos/${thisProfile}`)
-          
+        .then((data) => {
+          setProfileInfo(data)
+          const videoUrl = new URL(
+            `http://localhost:1234/api/v1/videos/${thisProfile}`
+          );
+
           fetch(videoUrl, {
             method: "GET",
             headers: {
               "Content-type": "application/json; charset=UTF-8",
-              "authorisation": `Bearer ${localStorage.getItem("userToken")}`
-            }
+              authorisation: `Bearer ${localStorage.userToken}`,
+            },
           })
-          .then((response) => {
-            if (response.status === 400) {
-              setErrorMsg("Videos don't exist");
-            }
-            if (response.status === 200) {
-              setErrorMsg("");
-            }
-            return response.json()
-          })
-          .then((data) => {
-            setVideos(data.videos)
-          })
+            .then((response) => {
+              if (response.status === 400) {
+                setErrorMsg("Videos don't exist");
+              }
+              if (response.status === 200) {
+                setErrorMsg("");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              setVideos(data.videos);
+            });
         })
         .catch((err) => console.log(err));
     } catch (error) {
@@ -58,20 +62,19 @@ const Profile = ({ setCoeusUser, coeusUser }) => {
   const deleteProfile = async () => {
     try {
       const url = new URL(
-        `http://localhost:1234/api/v1/auth/delete/${coeusUser}`
+        `http://localhost:1234/api/v1/auth/delete/${coeusUser.userId}`
       );
       await fetch(url, {
         method: "DELETE",
-          headers: {
+        headers: {
           "Content-type": "application/json; charset=UTF-8",
         },
       })
         .then((response) => response.json())
         .then((data) => {
           if (data.username) {
-            setCoeusUser("");
-            localStorage.removeItem("coeusUser");
-            localStorage.removeItem("userToken")
+            setCoeusUser({});
+            localStorage.removeItem("userToken");
             navigate("/");
           }
         })
@@ -82,63 +85,63 @@ const Profile = ({ setCoeusUser, coeusUser }) => {
   };
 
   const upload = async () => {
-    const uploadInput = document.getElementById("embedInput")
-    const uploadValue = uploadInput.value
+    const uploadInput = document.getElementById("embedInput");
+    const uploadValue = uploadInput.value;
     const body = {
-      "url": uploadValue
-    }
+      url: uploadValue,
+    };
     console.log(body);
-    
-    uploadInput.value = ""
+
+    uploadInput.value = "";
     try {
-      const url = new URL(
-        "http://localhost:1234/api/v1/videos/"
-      )
+      const url = new URL("http://localhost:1234/api/v1/videos/");
       await fetch(url, {
         method: "POST",
         headers: {
           "Content-type": "application/json; charset=UTF-8",
-          "authorisation": `Bearer ${localStorage.getItem("userToken")}`
+          authorisation: `Bearer ${localStorage.getItem("userToken")}`,
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((err) => console.log(err));
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+        })
+        .catch((err) => console.log(err));
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
-  return (
+  return (coeusUser && profileInfo) ? (
     <>
       {!errorMsg ? (
         <div>
-          <h1>Profile</h1>
-          {videos.length > 0 && (
+          <h1>{profileInfo.username}'s profile</h1>
+          {videos.length > 0 &&
             videos.map((video, id) => {
               return (
                 <iframe
-                key={id}
-            width="560"
-            height="315"
-            src={`https://www.youtube.com/embed/${video.url}`}
-            title="YouTube video player"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-          ></iframe>
-              )
-            })
-          )}
+                  key={id}
+                  width="560"
+                  height="315"
+                  src={`https://www.youtube.com/embed/${video.url}`}
+                  title="YouTube video player"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                ></iframe>
+              );
+            })}
           <br />
-          {thisProfile === coeusUser && (
+          {thisProfile === coeusUser.userId && (
             <>
               <h3>Upload your videos below</h3>
-              <p>Enter the youtube embed code below e.g. qYSc5LuNwPg?si=wZkSVn_oyGP2HXb9</p>
-              <input id="embedInput"/>
+              <p>
+                Enter the youtube embed code below e.g.
+                qYSc5LuNwPg?si=wZkSVn_oyGP2HXb9
+              </p>
+              <input id="embedInput" />
               <button onClick={() => upload()}>Upload your video</button>
               <br />
               <button onClick={() => deleteProfile()}>
@@ -154,6 +157,8 @@ const Profile = ({ setCoeusUser, coeusUser }) => {
         </div>
       )}
     </>
+  ) : (
+    <h2>Loading...</h2>
   );
 };
 

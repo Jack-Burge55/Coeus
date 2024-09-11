@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Register = ({ setCoeusUser }) => {
+const Register = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
 
@@ -64,8 +64,7 @@ const Register = ({ setCoeusUser }) => {
           })
           .then((data) => {
             if (data.user) {
-              setCoeusUser(data.user.userID);
-              localStorage.setItem("coeusUser", data.user.userID);
+              localStorage.setItem("userId", data.user.userId);
               localStorage.setItem("userToken", data.token)
               navigate("/");
             }
