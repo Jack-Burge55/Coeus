@@ -38,7 +38,7 @@ app.use(express.json())
 app.use("/api/v1/auth/login", loginRouter)
 app.use("/api/v1/auth/register", registerRouter)
 app.use("/api/v1/auth/delete", deleteRouter)
-app.use("/api/v1/users", usersRouter)
+app.use("/api/v1/users", authenticateUser, usersRouter)
 app.use("/api/v1/videos", authenticateUser, videosRouter)
 
 app.use(notFoundMiddleware)
