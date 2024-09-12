@@ -1,13 +1,14 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../UserContext";
+import toggleFollowUser from "../userApi/toggleFollowUser";
 
 const Profile = ({ setCoeusUser }) => {
-  const coeusUser = useContext(UserContext)
+  const coeusUser = useContext(UserContext);
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState("");
   const [videos, setVideos] = useState([]);
-  const [profileInfo, setProfileInfo] = useState(null)  
+  const [profileInfo, setProfileInfo] = useState(null);
   const thisProfile = window.location.href.split("profile/")[1];
 
   useEffect(() => {
@@ -23,12 +24,12 @@ const Profile = ({ setCoeusUser }) => {
         .then((response) => {
           if (response.status !== 200) {
             setErrorMsg("User profile does not exist");
-            throw new Error("no user found")
-          }          
+            throw new Error("no user found");
+          }
           return response.json();
         })
-        .then((data) => {          
-          setProfileInfo(data)
+        .then((data) => {
+          setProfileInfo(data);
           const videoUrl = new URL(
             `http://localhost:1234/api/v1/videos/${thisProfile}`
           );
@@ -113,45 +114,75 @@ const Profile = ({ setCoeusUser }) => {
     }
   };
 
-  if (errorMsg) return <h2>{errorMsg}</h2>
+  const usersProfile = thisProfile === coeusUser?.userId;
 
-  return (coeusUser && profileInfo) ? (
+  if (errorMsg) return <h2>{errorMsg}</h2>;
+
+  return coeusUser && profileInfo ? (
     <>
-        <div>
-          <h1>{profileInfo.username}'s profile</h1>
-          {videos.length > 0 &&
-            videos.map((video, id) => {
-              return (
-                <iframe
-                  key={id}
-                  width="560"
-                  height="315"
-                  src={`https://www.youtube.com/embed/${video.url}`}
-                  title="YouTube video player"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  allowFullScreen
-                ></iframe>
+      <div>
+        <h1>{profileInfo.username}'s profile</h1>
+        {!usersProfile &&
+          (coeusUser.follows.includes(profileInfo.userId) ? (
+            <button onClick={async () => {
+              const result = await toggleFollowUser(
+                coeusUser,
+                profileInfo.userId,
+                "unfollow"
               );
-            })}
-          <br />
-          {thisProfile === coeusUser.userId && (
-            <>
-              <h3>Upload your videos below</h3>
-              <p>
-                Enter the youtube embed code below e.g.
-                qYSc5LuNwPg?si=wZkSVn_oyGP2HXb9
-              </p>
-              <input id="embedInput" />
-              <button onClick={() => upload()}>Upload your video</button>
-              <br />
-              <button onClick={() => deleteProfile()}>
-                Delete your profile
-              </button>
-            </>
-          )}
-          <button onClick={() => navigate("/")}>Back to home</button>
-        </div>
+              if (!(result instanceof Error)) {
+                console.log(result);
+                setCoeusUser(result);
+              } else {
+                setErrorMsg("Can't find User!");
+              }
+            }}>Unfollow User</button>
+          ) : (
+            <button onClick={async () => {
+              const result = await toggleFollowUser(
+                coeusUser,
+                profileInfo.userId,
+                "follow"
+              );
+              if (!(result instanceof Error)) {
+                console.log(result);
+                setCoeusUser(result);
+              } else {
+                setErrorMsg("Can't find User!");
+              }
+            }}>Follow User</button>
+          ))}
+        {videos.length > 0 &&
+          videos.map((video, id) => {
+            return (
+              <iframe
+                key={id}
+                width="560"
+                height="315"
+                src={`https://www.youtube.com/embed/${video.url}`}
+                title="YouTube video player"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              ></iframe>
+            );
+          })}
+        <br />
+        {usersProfile && (
+          <>
+            <h3>Upload your videos below</h3>
+            <p>
+              Enter the youtube embed code below e.g.
+              qYSc5LuNwPg?si=wZkSVn_oyGP2HXb9
+            </p>
+            <input id="embedInput" />
+            <button onClick={() => upload()}>Upload your video</button>
+            <br />
+            <button onClick={() => deleteProfile()}>Delete your profile</button>
+          </>
+        )}
+        <button onClick={() => navigate("/")}>Back to home</button>
+      </div>
     </>
   ) : (
     <h2>Loading...</h2>
