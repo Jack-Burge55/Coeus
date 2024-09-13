@@ -15,11 +15,9 @@ const corsOptions = {
 }
 
 // routers
-const loginRouter = require("./routes/login")
-const registerRouter = require("./routes/register")
-const deleteRouter = require("./routes/delete")
 const usersRouter = require("./routes/users")
 const videosRouter = require("./routes/videos")
+const authRouter = require("./routes/auth")
 
 // error handler
 const notFoundMiddleware = require('./middleware/not-found');
@@ -35,11 +33,9 @@ app.use(express.json())
 
 
 // routes
-app.use("/api/v1/auth/login", loginRouter)
-app.use("/api/v1/auth/register", registerRouter)
-app.use("/api/v1/auth/delete", deleteRouter)
 app.use("/api/v1/users", authenticateUser, usersRouter)
 app.use("/api/v1/videos", authenticateUser, videosRouter)
+app.use("/api/v1/auth", authRouter)
 
 app.use(notFoundMiddleware)
 app.use(errorHandlerMiddleware)
@@ -48,8 +44,13 @@ const port = process.env.PORT_NUMBER || 1000
 
 const start = async () => {
     try {
-      await connectDB(process.env.MONGO_URI) 
-      app.listen(port, console.log(`Server is listening on port ${port}`));
+      if (process.env.NODE_ENV !== 'test') {
+        await connectDB(process.env.MONGO_URI) 
+        app.listen(port);
+      }
+      else {
+        await connectDB(process.env.MONGO_TEST_URI) 
+      }
     } catch (error) {
       console.log(error);
     }
