@@ -6,7 +6,7 @@ const auth = async (req, res, next) => {
   const authHeader = req.headers.authorisation
   
   if (!authHeader?.startsWith("Bearer")) {
-    throw new UnauthenticatedError("Authentication Failed")
+    throw new UnauthenticatedError("Authentication failed")
   }
   const token = authHeader.split(" ")[1]
   

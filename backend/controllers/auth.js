@@ -1,6 +1,19 @@
+const { BadRequestError, UnauthenticatedError } = require("../errors");
 const User = require("../models/User");
 const { StatusCodes } = require("http-status-codes");
-const { BadRequestError, UnauthenticatedError } = require("../errors");
+
+const deleteUser = async (req, res, next) => {
+  const { id: userId } = req.params;
+
+  const user = await User.findByIdAndDelete({ _id: userId });
+
+  if (!user) {
+    return next(new BadRequestError(`No user with id: ${userId} found`));
+  }
+  res
+    .status(StatusCodes.OK)
+    .json({ userId: user._id, username: user.username, email: user.email });
+};
 
 const loginUser = async (req, res) => {
   const { username, password } = req.body;
@@ -30,6 +43,17 @@ const loginUser = async (req, res) => {
     .json({ user: { username: user.username, userId: user._id }, token });
 };
 
+const registerUser = async (req, res) => {
+  const user = await User.create({ ...req.body });
+  const token = user.createJWT();
+  res.status(StatusCodes.CREATED).json({
+    user: { username: user.username, userId: user._id },
+    token
+  });
+};
+
 module.exports = {
+  deleteUser,
   loginUser,
+  registerUser
 };

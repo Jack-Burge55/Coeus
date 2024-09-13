@@ -36,7 +36,6 @@ const followUser = async (req, res, next) => {
   const {userId} = req.user
   const { id: followId} = req.params
   const userToFollow = await User.findById({_id: followId})
-  console.log(userToFollow);
   if (!userToFollow) {
     return next(new BadRequestError(`No user with id: ${followId} found`));
   }
@@ -49,7 +48,6 @@ const unfollowUser = async (req, res, next) => {
   const {userId} = req.user
   const { id: followId} = req.params
   const userToUnfollow = await User.findById({_id: followId})
-  console.log(userToUnfollow);
   if (!userToUnfollow) {
     return next(new BadRequestError(`No user with id: ${followId} found`));
   }
