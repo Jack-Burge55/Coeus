@@ -1,7 +1,7 @@
 import "./App.css";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
-import { Home, Register, Login, Profile, FindUsers } from "./components";
+import { Home, Register, Login, Profile, FindUsers } from "./pages";
 import { useEffect, useState } from "react";
 import { UserContext } from "./UserContext";
 
