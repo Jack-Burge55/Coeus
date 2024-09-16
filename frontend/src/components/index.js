@@ -1,7 +1,3 @@
-import Home from "./Home";
-import Login from "./Login";
-import Register from "./Register";
-import Profile from "./Profile";
-import FindUsers from "./FindUsers"
+import Video from "./Video"
 
-export { Home, Login, Register, Profile, FindUsers };
+export { Video };
