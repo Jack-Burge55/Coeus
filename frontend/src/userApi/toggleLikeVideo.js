@@ -20,9 +20,7 @@ const toggleLikeVideo = async (videoId, setCoeusUser, action) => {
     .then((response) => {      
       if (response.status !== 200) {
         throw new Error("No video found");
-      }
-      console.log("getUser called");
-      
+      }      
       getUser(setCoeusUser)
     })
     .catch((err) => {
