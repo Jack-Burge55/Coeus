@@ -1,9 +1,9 @@
 import "./App.css";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
-
 import { Home, Register, Login, Profile, FindUsers } from "./pages";
 import { useEffect, useState } from "react";
 import { UserContext } from "./UserContext";
+import getUser from "./userApi/getUser";
 
 function App() {
   const location = useLocation();
@@ -19,59 +19,19 @@ function App() {
     ) {
       navigate("/login");
     }
-    try {
-      if (localStorage.userId && localStorage.userToken) {
-        // get user information
-        const url = new URL(
-          `http://localhost:1234/api/v1/users/${localStorage.userId}`
-        );
-        fetch(url, {
-          method: "GET",
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-            authorisation: `Bearer ${localStorage.userToken}`,
-          },
-        })
-          .then((response) => {
-            if (response.status === 400) {
-              console.log(response);
-            }
-            return response.json();
-          })
-          .then((data) => {
-            if (data) {
-              setCoeusUser(data);
-            }
-          })
-          .catch((err) => console.log(err));
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    getUser(setCoeusUser);
   }, [location.pathname, navigate]);
 
   return (
     <div className="App">
-      <UserContext.Provider value={coeusUser}>
+      <UserContext.Provider value={{ coeusUser, setCoeusUser }}>
         <Routes>
-          <Route
-            exact
-            path="/"
-            element={<Home setCoeusUser={setCoeusUser}/>}
-          />
-          <Route
-            exact
-            path="/find-users"
-            element={
-              <FindUsers setCoeusUser={setCoeusUser}/>
-            }
-          />
+          <Route exact path="/" element={<Home />} />
+          <Route exact path="/find-users" element={<FindUsers />} />
           <Route
             exact
             path="/profile/:id"
-            element={
-              <Profile setCoeusUser={setCoeusUser}/>
-            }
+            element={<Profile setCoeusUser={setCoeusUser} />}
           />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

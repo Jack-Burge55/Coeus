@@ -1,11 +1,13 @@
 import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../UserContext";
-import toggleFollowUser from "../userApi/toggleFollowUser";
 
-const FindUsers = ({ setCoeusUser }) => {
+import toggleFollowUser from "../userApi/toggleFollowUser";
+import * as constants from "../constants";
+
+const FindUsers = () => {
   const navigate = useNavigate();
-  const coeusUser = useContext(UserContext);
+  const { coeusUser, setCoeusUser } = useContext(UserContext);
 
   const [userSuggestions, setUserSuggestions] = useState(null);
   const [errorMsg, setErrorMsg] = useState([]);
@@ -14,7 +16,7 @@ const FindUsers = ({ setCoeusUser }) => {
     // get all users to show (except own user)
     if (!coeusUser) return;
     try {
-      const url = new URL("http://localhost:1234/api/v1/users");
+      const url = new URL(`${constants.usedUrl}/api/v1/users`);
       fetch(url, {
         method: "GET",
         headers: {
@@ -57,13 +59,11 @@ const FindUsers = ({ setCoeusUser }) => {
                   <button
                     onClick={async () => {
                       const result = await toggleFollowUser(
-                        coeusUser,
                         sugg._id,
-                        "unfollow"
+                        "unfollow",
+                        setCoeusUser
                       );
-                      if (!(result instanceof Error)) {
-                        setCoeusUser(result);
-                      } else {
+                      if ((result instanceof Error)) {
                         setErrorMsg("User doesn't exist!");
                       }
                     }}
@@ -74,13 +74,11 @@ const FindUsers = ({ setCoeusUser }) => {
                   <button
                     onClick={async () => {
                       const result = await toggleFollowUser(
-                        coeusUser,
                         sugg._id,
-                        "follow"
+                        "follow",
+                        setCoeusUser
                       );
-                      if (!(result instanceof Error)) {
-                        setCoeusUser(result);
-                      } else {
+                      if ((result instanceof Error)) {
                         setErrorMsg("User doesn't exist!");
                       }
                     }}

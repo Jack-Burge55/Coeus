@@ -1,33 +1,35 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../UserContext";
+
 import toggleFollowUser from "../userApi/toggleFollowUser";
-
+import getUser from "../userApi/getUser";
+import * as constants from "../constants";
 import "../pagesStyles/ProfileStyle.css";
-
-import { Video } from "../components";
+import { Video, VideoTile } from "../components";
 import topics from "../assets/topics";
 
-const Profile = ({ setCoeusUser }) => {
-  const coeusUser = useContext(UserContext);
+const Profile = () => {
+  const { coeusUser, setCoeusUser } = useContext(UserContext);
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState("");
   const [uploadErrorMsg, setUploadErrorMsg] = useState("");
-  const [videos, setVideos] = useState([]);
-  const [textInput, setTextInput] = useState("")
+  const [profileVideos, setProfileVideos] = useState([]);
+  const [profileLikedVideos, setProfileLikedVideos] = useState([]);
+  const [textInput, setTextInput] = useState("");
   const [uploadInput, setUploadInput] = useState("");
   const [uploadMajorTopics, setUploadMajorTopics] = useState([]);
   const [uploadMinorTopics, setUploadMinorTopics] = useState([]);
   const [profileInfo, setProfileInfo] = useState(null);
-  const [uploadRefresh, setUploadRefresh] = useState(0)
   const thisProfile = window.location.href.split("profile/")[1];
+  const usersProfile = thisProfile === coeusUser?.userId;
 
   const MAJOR_TOPIC_LIMIT = 2;
-  const MINOR_TOPIC_LIMIT = 3;  
+  const MINOR_TOPIC_LIMIT = 3;
 
   useEffect(() => {
     try {
-      const url = new URL(`http://localhost:1234/api/v1/users/${thisProfile}`);
+      const url = new URL(`${constants.usedUrl}/api/v1/users/${thisProfile}`);
       fetch(url, {
         method: "GET",
         headers: {
@@ -44,11 +46,11 @@ const Profile = ({ setCoeusUser }) => {
         })
         .then((data) => {
           setProfileInfo(data);
-          const videoUrl = new URL(
-            `http://localhost:1234/api/v1/videos/${thisProfile}`
+          const profileVideoUrl = new URL(
+            `${constants.usedUrl}/api/v1/videos/${thisProfile}`
           );
 
-          fetch(videoUrl, {
+          fetch(profileVideoUrl, {
             method: "GET",
             headers: {
               "Content-type": "application/json; charset=UTF-8",
@@ -57,7 +59,7 @@ const Profile = ({ setCoeusUser }) => {
           })
             .then((response) => {
               if (response.status === 400) {
-                setErrorMsg("Videos don't exist");
+                setErrorMsg("Profile videos don't exist");
               }
               if (response.status === 200) {
                 setErrorMsg("");
@@ -65,19 +67,44 @@ const Profile = ({ setCoeusUser }) => {
               return response.json();
             })
             .then((data) => {
-              setVideos(data.videos);
+              setProfileVideos(data.videos);
+              // if users profile, get their liked videos
+              if (usersProfile) {
+                const videoLikesUrl = new URL(
+                  `${constants.usedUrl}/api/v1/videos/likes`
+                );
+                fetch(videoLikesUrl, {
+                  method: "GET",
+                  headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    authorisation: `Bearer ${localStorage.userToken}`,
+                  },
+                })
+                  .then((response) => {
+                    if (response.status === 400) {
+                      setErrorMsg("Liked Videos don't exist");
+                    }
+                    if (response.status === 200) {
+                      setErrorMsg("");
+                    }
+                    return response.json();
+                  })
+                  .then((data) => {
+                    setProfileLikedVideos(data.videos);
+                  });
+              }
             });
         })
-        .catch((err) => err);
+        .catch((err) => console.log(err));
     } catch (error) {
       console.log(error);
     }
-  }, [thisProfile, uploadRefresh]);
+  }, [thisProfile, usersProfile, coeusUser]);
 
   const deleteProfile = async () => {
     try {
       const url = new URL(
-        `http://localhost:1234/api/v1/auth/delete/${coeusUser.userId}`
+        `${constants.usedUrl}/api/v1/auth/delete/${coeusUser.userId}`
       );
       await fetch(url, {
         method: "DELETE",
@@ -128,7 +155,7 @@ const Profile = ({ setCoeusUser }) => {
 
   const upload = async () => {
     try {
-      const url = new URL("http://localhost:1234/api/v1/videos/");
+      const url = new URL(`${constants.usedUrl}/api/v1/videos/`);
       await fetch(url, {
         method: "POST",
         headers: {
@@ -138,17 +165,18 @@ const Profile = ({ setCoeusUser }) => {
         body: JSON.stringify({
           url: uploadInput,
           majorTopics: uploadMajorTopics,
-          minorTopics: uploadMinorTopics
+          minorTopics: uploadMinorTopics,
         }),
       })
-        .then((response) => response.json())
         .then(() => {
-          setUploadRefresh(uploadRefresh + 1)
-          setUploadInput("")
-          setUploadMajorTopics([])
-          setUploadMinorTopics([])
+          setUploadInput("");
+          setUploadMajorTopics([]);
+          setUploadMinorTopics([]);
+          getUser(setCoeusUser);
         })
-        .catch((err) => console.log(err));
+        .catch((err) => {
+          console.log(err);
+        });
     } catch (error) {
       console.log(error);
     }
@@ -156,7 +184,7 @@ const Profile = ({ setCoeusUser }) => {
 
   const deleteVideo = async (videoId) => {
     try {
-      const url = new URL("http://localhost:1234/api/v1/videos/");
+      const url = new URL(`${constants.usedUrl}/api/v1/videos/`);
       await fetch(url, {
         method: "DELETE",
         headers: {
@@ -164,20 +192,15 @@ const Profile = ({ setCoeusUser }) => {
           authorisation: `Bearer ${localStorage.getItem("userToken")}`,
         },
         body: JSON.stringify({
-          videoId
+          videoId,
         }),
       })
-        .then((response) => response.json())
-        .then(() => {
-          setUploadRefresh(uploadRefresh + 1)
-        })
+        .then(getUser(setCoeusUser))
         .catch((err) => console.log(err));
     } catch (error) {
       console.log(error);
     }
-  }
-
-  const usersProfile = thisProfile === coeusUser?.userId;
+  };
 
   if (errorMsg) return <h2>{errorMsg}</h2>;
 
@@ -190,15 +213,12 @@ const Profile = ({ setCoeusUser }) => {
             <button
               onClick={async () => {
                 const result = await toggleFollowUser(
-                  coeusUser,
                   profileInfo.userId,
-                  "unfollow"
+                  "unfollow",
+                  setCoeusUser
                 );
-                if (!(result instanceof Error)) {
-                  console.log(result);
-                  setCoeusUser(result);
-                } else {
-                  setErrorMsg("Can't find User!");
+                if (result instanceof Error) {
+                  setErrorMsg("User doesn't exist!");
                 }
               }}
             >
@@ -208,15 +228,12 @@ const Profile = ({ setCoeusUser }) => {
             <button
               onClick={async () => {
                 const result = await toggleFollowUser(
-                  coeusUser,
                   profileInfo.userId,
-                  "follow"
+                  "follow",
+                  setCoeusUser
                 );
-                if (!(result instanceof Error)) {
-                  console.log(result);
-                  setCoeusUser(result);
-                } else {
-                  setErrorMsg("Can't find User!");
+                if (result instanceof Error) {
+                  setErrorMsg("User doesn't exist!");
                 }
               }}
             >
@@ -238,16 +255,26 @@ const Profile = ({ setCoeusUser }) => {
                 setTextInput(e.target.value);
               }}
             />
-            {textInput && <button onClick={() => {
-              setUploadInput(textInput)
-              setTextInput("")
-              setUploadMajorTopics([])
-              setUploadMinorTopics([])
-            }}>Find Video</button>}
+            {textInput && (
+              <button
+                onClick={() => {
+                  setUploadInput(textInput);
+                  setTextInput("");
+                  setUploadMajorTopics([]);
+                  setUploadMinorTopics([]);
+                }}
+              >
+                Find Video
+              </button>
+            )}
             <br />
             {uploadInput && (
               <>
-                <Video url={uploadInput} majorTopics={[]} minorTopics={[]}></Video>
+                <Video
+                  url={uploadInput}
+                  majorTopics={[]}
+                  minorTopics={[]}
+                ></Video>
                 <br />
                 <button
                   onClick={() => {
@@ -331,18 +358,51 @@ const Profile = ({ setCoeusUser }) => {
             <button onClick={() => deleteProfile()}>Delete your profile</button>
           </>
         )}
-        {videos.length > 0 && (
+        {profileVideos.length > 0 && (
           <>
             {usersProfile ? (
               <h2>Your Videos</h2>
             ) : (
               <h2>{profileInfo.username}'s videos</h2>
             )}
-            {videos.map((video, id) => {
+
+            {profileVideos.map((video, id) => {
               return (
                 <div key={id}>
-                  <Video url={video.url} majorTopics={video.majorTopics} minorTopics={video.minorTopics}></Video>
-                  {usersProfile && <button onClick={() => deleteVideo(video._id)}>Delete Video</button>}
+                  <VideoTile
+                    url={video.url}
+                    videoId={video._id}
+                    majorTopics={video.majorTopics}
+                    minorTopics={video.minorTopics}
+                    usersOwn={usersProfile}
+                  ></VideoTile>
+                  {usersProfile && (
+                    <button onClick={() => deleteVideo(video._id)}>
+                      Delete Video
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </>
+        )}
+        {usersProfile && (
+          <>
+            <h2>
+              {profileLikedVideos.length
+                ? "Your liked videos"
+                : "Your liked videos will appear here"}
+            </h2>
+            {profileLikedVideos.map((video, id) => {
+              return (
+                <div key={id}>
+                  <VideoTile
+                    url={video.url}
+                    videoId={video._id}
+                    majorTopics={video.majorTopics}
+                    minorTopics={video.minorTopics}
+                    usersOwn={false}
+                  ></VideoTile>
                 </div>
               );
             })}

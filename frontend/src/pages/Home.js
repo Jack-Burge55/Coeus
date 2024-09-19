@@ -2,9 +2,9 @@ import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../UserContext";
 
-const Home = ({ setCoeusUser }) => {
+const Home = () => {
   const navigate = useNavigate();
-  const coeusUser = useContext(UserContext)
+  const {coeusUser, setCoeusUser} = useContext(UserContext)
 
   const findUsers = () => {
     navigate(`/find-users`)

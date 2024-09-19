@@ -14,20 +14,48 @@ const newUserTwo = {
   password: `passwordTwo${registerId}`,
   email: `emailTwo${registerId}@gmail.com`,
 };
-let token, userId, secondUserId, res, res1;
+let token,
+  secondToken,
+  userId,
+  secondUserId,
+  videoId,
+  videoLikeCount,
+  videoLikedBy;
+const badVideoId = "22ea8048344ad812a4de3c99";
 const badToken = "badTokenStringValue";
+const dummyVideoUrl = "dQw4w9WgXcQ?si=u_2xEGULAg4a8k--";
 
 beforeAll(async () => {
-  res = await request(app).post("/api/v1/auth/register").send(newUser);
-  res1 = await request(app).post("/api/v1/auth/register").send(newUserTwo);
+  const res = await request(app).post("/api/v1/auth/register").send(newUser);
+  const res1 = await request(app)
+    .post("/api/v1/auth/register")
+    .send(newUserTwo);
   token = res.body.token;
+  secondToken = res1.body.token;
   userId = res.body.user.userId;
   secondUserId = res1.body.user.userId;
+
+  const videoRes = await request(app)
+    .post("/api/v1/videos")
+    .send({
+      url: dummyVideoUrl,
+      majorTopics: ["someMajor"],
+      minorTopics: ["someMinorOne", "someMinorTwo"],
+    })
+    .set({ authorisation: `Bearer ${secondToken}` });
+
+  videoId = videoRes.body.video._id;
+  videoLikeCount = videoRes.body.video.likeCount;
+  videoLikedBy = videoRes.body.video.likedBy;
 });
 
 afterAll(async () => {
   await request(app).delete(`/api/v1/auth/delete/${userId}`).send({});
   await request(app).delete(`/api/v1/auth/delete/${secondUserId}`).send({});
+  await request(app)
+    .delete("/api/v1/videos")
+    .send({ videoId: videoId })
+    .set({ authorisation: `Bearer ${token}` });
 });
 
 describe("/api/v1/users", () => {
@@ -117,4 +145,115 @@ describe("/api/v1/users", () => {
       `No user with id: 2${secondUserId.slice(1)} found`
     );
   });
+
+  // likeVideo
+  it("should be able to like a valid video which updates video likeCount", async () => {
+    expect(videoLikeCount).toBe(0);
+    expect(videoLikedBy.length).toBe(0);
+
+    const likeRes = await request(app)
+      .patch(`/api/v1/users/like/${videoId}`)
+      .set({ authorisation: `Bearer ${token}` });
+
+    const updatedVideo = await request(app)
+      .get(`/api/v1/videos`)
+      .send({ videoId: videoId })
+      .set({ authorisation: `Bearer ${token}` });
+
+    expect(likeRes.status).toBe(200);
+    expect(likeRes.body.user.likedVideos[0]).toBe(videoId);
+
+    expect(updatedVideo.body.video.likeCount).toBe(1);
+    expect(updatedVideo.body.video.likedBy[0]).toBe(userId);
+  });
+
+  it("should not change a videos likeCount if the same user likes it twice", async () => {
+    await request(app)
+      .patch(`/api/v1/users/like/${videoId}`)
+      .set({ authorisation: `Bearer ${token}` });
+
+    const updatedVideo = await request(app)
+      .get(`/api/v1/videos`)
+      .send({ videoId: videoId })
+      .set({ authorisation: `Bearer ${token}` });
+
+    expect(updatedVideo.body.video.likeCount).toBe(1);
+    expect(updatedVideo.body.video.likedBy[0]).toBe(userId);
+  });
+
+  it("should return an error if invalid video liked", async () => {
+    const res = await request(app)
+    .patch(`/api/v1/users/like/${badVideoId}`)
+    .set({ authorisation: `Bearer ${token}` });
+
+    expect(res.status).toBe(400);
+    expect(res.body.msg).toBe(
+      `No video with id: ${badVideoId} found`
+    );
+  });
+
+  it("should return an error if a user tries to like their own video", async () => {
+    const res = await request(app)
+    .patch(`/api/v1/users/like/${videoId}`)
+    .set({ authorisation: `Bearer ${secondToken}` });
+
+    expect(res.status).toBe(400);
+    expect(res.body.msg).toBe(
+      "User cannot like their own videos"
+    );
+  });
+
+    // unlikeVideo
+    it("should be able to unlike a valid video which updates video likeCount", async () => {
+      const unlikeRes = await request(app)
+        .patch(`/api/v1/users/unlike/${videoId}`)
+        .set({ authorisation: `Bearer ${token}` });
+  
+      const updatedVideo = await request(app)
+        .get(`/api/v1/videos`)
+        .send({ videoId: videoId })
+        .set({ authorisation: `Bearer ${token}` });
+  
+      expect(unlikeRes.status).toBe(200);
+      expect(unlikeRes.body.user.likedVideos.length).toBe(0);
+  
+      expect(updatedVideo.body.video.likeCount).toBe(0);
+      expect(updatedVideo.body.video.likedBy.length).toBe(0);
+    });
+  
+    it("should not change a videos likeCount if the same user unlikes it twice", async () => {
+      await request(app)
+        .patch(`/api/v1/users/unlike/${videoId}`)
+        .set({ authorisation: `Bearer ${token}` });
+  
+      const updatedVideo = await request(app)
+        .get(`/api/v1/videos`)
+        .send({ videoId: videoId })
+        .set({ authorisation: `Bearer ${token}` });
+  
+        expect(updatedVideo.body.video.likeCount).toBe(0);
+        expect(updatedVideo.body.video.likedBy.length).toBe(0);
+    });
+  
+    it("should return an error if invalid video unliked", async () => {
+      const res = await request(app)
+      .patch(`/api/v1/users/unlike/${badVideoId}`)
+      .set({ authorisation: `Bearer ${token}` });
+  
+      expect(res.status).toBe(400);
+      expect(res.body.msg).toBe(
+        `No video with id: ${badVideoId} found`
+      );
+    });
+  
+    it("should return an error if a user tries to unlike their own video", async () => {
+      const res = await request(app)
+      .patch(`/api/v1/users/unlike/${videoId}`)
+      .set({ authorisation: `Bearer ${secondToken}` });
+  
+      expect(res.status).toBe(400);
+      expect(res.body.msg).toBe(
+        "User cannot unlike their own videos"
+      );
+    });
 });

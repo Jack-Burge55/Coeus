@@ -1,3 +1,4 @@
 import Video from "./Video"
+import VideoTile from "./VideoTile";
 
-export { Video };
+export { Video, VideoTile };

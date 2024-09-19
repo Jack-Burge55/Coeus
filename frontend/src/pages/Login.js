@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import * as constants from "../constants"
+
 const Login = () => {
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState("");
@@ -34,7 +36,7 @@ const Login = () => {
         password,
       };
       try {
-        const url = new URL("http://localhost:1234/api/v1/auth/login");
+        const url = new URL(`${constants.usedUrl}/api/v1/auth/login`);
         await fetch(url, {
           method: "POST",
           body: JSON.stringify(request),

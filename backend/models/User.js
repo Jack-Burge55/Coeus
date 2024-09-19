@@ -20,6 +20,9 @@ const UserSchema = new mongoose.Schema({
   },
   follows: {
     type: Array
+  },
+  likedVideos: {
+    type: Array
   }
 })
 

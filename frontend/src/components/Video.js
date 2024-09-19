@@ -12,7 +12,6 @@ const Video = ({ url, majorTopics, minorTopics }) => {
       ></iframe>
       {majorTopics.map(major => <h4 key={major}>{major}</h4>)}
       {minorTopics.map(minor => <h5 key={minor}>{minor}</h5>)}
-
     </>
   );
 };
