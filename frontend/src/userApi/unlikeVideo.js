@@ -1,9 +1,10 @@
 import * as constants from "../constants"
 import getUser from "./getUser";
 
-const toggleFollowUser = async (userId, followString, setCoeusUser) => {
+const unlikeVideo = async (videoId, setCoeusUser) => {
+  let result;
   const url = new URL(
-    `${constants.usedUrl}/api/v1/users/${followString}/${userId}`
+    `${constants.usedUrl}/api/v1/users/unlike/${videoId}`
   );
   await fetch(url, {
     method: "PATCH",
@@ -14,13 +15,15 @@ const toggleFollowUser = async (userId, followString, setCoeusUser) => {
   })
     .then((response) => {      
       if (response.status !== 200) {
-        throw new Error("No users found");
+        throw new Error("No video found");
       }
       getUser(setCoeusUser)
     })
     .catch((err) => {
-      return err
+      result = err
     });
+        
+  return result;
 };
 
-export default toggleFollowUser;
+export default unlikeVideo;

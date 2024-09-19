@@ -17,6 +17,14 @@ const VideoSchema = new mongoose.Schema(
       required: [true, "Provide at least one minor topic"],
       validate: [minorTopicArrayLimit, "Must have between 1 and 3 minor topics"]
     },
+    likedBy: {
+      type: Array,
+      default: []
+    },
+    likeCount: {
+      type: Number,
+      default: 0
+    },
     uploadedBy: {
       type: mongoose.Types.ObjectId,
       ref: "User",

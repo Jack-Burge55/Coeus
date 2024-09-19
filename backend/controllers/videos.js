@@ -11,6 +11,24 @@ const getAllVideosByUser = async (req, res) => {
   res.status(StatusCodes.OK).json({videos, count: videos.length})
 }
 
+const getAllVideosByLike = async (req, res) => {
+  const userId =req.user.userId
+  const videos = await Video.find({ likedBy: userId})
+  if (!videos) {
+    return next(new BadRequestError(`No videos liked by ${userId} found`))
+  }
+  res.status(StatusCodes.OK).json({videos})
+}
+
+const getVideo = async (req, res, next) => {  
+  const {videoId} = req.body
+  const video = await Video.findById({_id: videoId}).sort("createdAt")
+  if (!video) {
+    return next(new BadRequestError(`No video with id: ${videoId} found`))
+  }
+  res.status(StatusCodes.OK).json({video})
+}
+
 const uploadVideo = async (req, res) => {
   req.body.uploadedBy = req.user.userId
   // check url isn't already a video
@@ -33,6 +51,8 @@ const deleteVideo = async (req, res, next) => {
 
 module.exports = {
   getAllVideosByUser,
+  getAllVideosByLike,
+  getVideo,
   uploadVideo,
   deleteVideo
 }

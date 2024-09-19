@@ -1,10 +1,15 @@
 import * as constants from "../constants"
 import getUser from "./getUser";
 
-const toggleFollowUser = async (userId, followString, setCoeusUser) => {
+// action is either 'like' or 'unlike'
+
+const toggleLikeVideo = async (videoId, setCoeusUser, action) => {
+  let result;
   const url = new URL(
-    `${constants.usedUrl}/api/v1/users/${followString}/${userId}`
+    `${constants.usedUrl}/api/v1/users/${action}/${videoId}`
   );
+  console.log(action);
+  
   await fetch(url, {
     method: "PATCH",
     headers: {
@@ -14,13 +19,17 @@ const toggleFollowUser = async (userId, followString, setCoeusUser) => {
   })
     .then((response) => {      
       if (response.status !== 200) {
-        throw new Error("No users found");
+        throw new Error("No video found");
       }
+      console.log("getUser called");
+      
       getUser(setCoeusUser)
     })
     .catch((err) => {
-      return err
+      result = err
     });
+        
+  return result;
 };
 
-export default toggleFollowUser;
+export default toggleLikeVideo;
