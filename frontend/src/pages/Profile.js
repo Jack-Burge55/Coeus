@@ -117,6 +117,7 @@ const Profile = () => {
           if (data.username) {
             setCoeusUser({});
             localStorage.removeItem("userToken");
+            localStorage.removeItem("userId");
             navigate("/");
           }
         })
