@@ -10,8 +10,12 @@ const Video = ({ url, majorTopics, minorTopics }) => {
         referrerPolicy="strict-origin-when-cross-origin"
         allowFullScreen
       ></iframe>
-      {majorTopics.map(major => <h4 key={major}>{major}</h4>)}
-      {minorTopics.map(minor => <h5 key={minor}>{minor}</h5>)}
+      <h3>{majorTopics.join(", ")}</h3>
+      {minorTopics.map((minor) => (
+        <div>
+          <h5 key={minor}>{minor.join(" → ")}</h5>
+        </div>
+      ))}
     </>
   );
 };

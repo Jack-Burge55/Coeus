@@ -101,6 +101,7 @@ const Profile = () => {
     }
   }, [thisProfile, usersProfile, coeusUser]);
 
+  // call delete profile API
   const deleteProfile = async () => {
     try {
       const url = new URL(
@@ -132,6 +133,14 @@ const Profile = () => {
       setUploadMajorTopics(
         uploadMajorTopics.filter((element) => element !== topic)
       );
+      // remove all minor topics if major topic removed
+      setUploadMinorTopics(
+        uploadMinorTopics.filter((element) => element[0] !== topic)
+      );
+      // close all subs if major topic removed
+      setMinorMoreTopics(
+        minorMoreTopics.filter((element) => element[0] !== topic)
+      );
     } else {
       setUploadMajorTopics([...uploadMajorTopics, topic]);
     }
@@ -139,9 +148,11 @@ const Profile = () => {
 
   // toggle selected minor topics
   const toggleMinorTopic = (topic) => {
-    if (minorTopicsContains(topic)) {
+    if (arrayListContains(uploadMinorTopics, topic)) {
       setUploadMinorTopics(
-        uploadMinorTopics.filter((element) => JSON.stringify(element) !== JSON.stringify(topic))
+        uploadMinorTopics.filter(
+          (element) => JSON.stringify(element) !== JSON.stringify(topic)
+        )
       );
     } else {
       setUploadMinorTopics([...uploadMinorTopics, topic]);
@@ -150,26 +161,43 @@ const Profile = () => {
 
   // function to toggle state for expanded topics
   const toggleMinorMore = (topic) => {
-    if (minorMoreTopics.includes(topic)) {
+    if (arrayListContains(minorMoreTopics, topic)) {
       setMinorMoreTopics(
-        minorMoreTopics.filter((element) => element !== topic)
+        minorMoreTopics.filter(
+          (element) => !element.join("").startsWith(topic.join(""))
+        )
+      );
+      setUploadMinorTopics(
+        uploadMinorTopics.filter(
+          (element) => !element.join("").startsWith(topic.join(""))
+        )
       );
     } else {
       setMinorMoreTopics([...minorMoreTopics, topic]);
     }
   };
 
-  const minorTopicsContains = (element) => {    
-    return uploadMinorTopics.filter(minor => {      
-      return JSON.stringify(element) === JSON.stringify(minor)
-    }).length > 0
-  }
+  // helper function to see if minorMore array contains a ceratin minorMore (all arrays)
+  const arrayListContains = (list, element) => {
+    return (
+      list.filter((listElement) => {
+        return JSON.stringify(element) === JSON.stringify(listElement);
+      }).length > 0
+    );
+  };
 
-  const recursiveExpansion = (obj, currentMinor) => {    
+  // recursive function to continually expand sub categories
+  const recursiveExpansion = (obj, currentMinor) => {
     const { name, subs } = obj;
-    const isMinorSelected = minorTopicsContains([...currentMinor, name]);
-    const isMinorMoreSelected = minorMoreTopics.includes(name);
-    
+    const isMinorSelected = arrayListContains(uploadMinorTopics, [
+      ...currentMinor,
+      name,
+    ]);
+    const isMinorMoreSelected = arrayListContains(minorMoreTopics, [
+      ...currentMinor,
+      name,
+    ]);
+
     return (
       <div key={name}>
         <button
@@ -183,7 +211,7 @@ const Profile = () => {
           {name}
         </button>
         <button
-          onClick={() => toggleMinorMore(name)}
+          onClick={() => toggleMinorMore([...currentMinor, name])}
           key={name + "more"}
           className={isMinorMoreSelected ? "expandedMore" : undefined}
         >
@@ -191,12 +219,18 @@ const Profile = () => {
         </button>
         {isMinorMoreSelected &&
           subs.map((sub) => {
-            const isSubSelected = minorTopicsContains([...currentMinor, name, sub])
+            const isSubSelected = arrayListContains(uploadMinorTopics, [
+              ...currentMinor,
+              name,
+              sub,
+            ]);
             if (typeof sub === "string") {
               return (
                 <div key={sub}>
                   <button
-                    onClick={() => toggleMinorTopic([...currentMinor, name, sub])}
+                    onClick={() =>
+                      toggleMinorTopic([...currentMinor, name, sub])
+                    }
                     key={sub}
                     className={isSubSelected ? "selectedMinor" : undefined}
                     disabled={
@@ -216,6 +250,7 @@ const Profile = () => {
     );
   };
 
+  // call upload API function
   const upload = async () => {
     try {
       const url = new URL(`${constants.usedUrl}/api/v1/videos/`);
@@ -246,6 +281,7 @@ const Profile = () => {
     }
   };
 
+  // call delete video API
   const deleteVideo = async (videoId) => {
     try {
       const url = new URL(`${constants.usedUrl}/api/v1/videos/`);
@@ -367,15 +403,18 @@ const Profile = () => {
                       >
                         {majorTopic}
                       </button>
-                      <br />
                       {isMajorSelected &&
                         minorTopics.map((minTopic) => {
                           if (typeof minTopic === "string") {
-                            const isMinorSelected =
-                              minorTopicsContains([majorTopic, minTopic])
+                            const isMinorSelected = arrayListContains(
+                              uploadMinorTopics,
+                              [majorTopic, minTopic]
+                            );
                             return (
                               <button
-                                onClick={() => toggleMinorTopic([majorTopic, minTopic])}
+                                onClick={() =>
+                                  toggleMinorTopic([majorTopic, minTopic])
+                                }
                                 key={minTopic}
                                 className={
                                   isMinorSelected ? "selectedMinor" : undefined
@@ -403,18 +442,21 @@ const Profile = () => {
                 })}
                 <h3>Minor topics</h3>
                 {uploadMinorTopics.map((minor) => {
-                  return <p key={minor}>{minor.join(" -> ")}</p>;
+                  return <p key={minor}>{minor.join(" → ")}</p>;
                 })}
                 <br />
-                {uploadMajorTopics > 0 && uploadMinorTopics > 0 && (
-                  <button
-                    onClick={() => {
-                      upload();
-                    }}
-                  >
-                    Upload your video
-                  </button>
-                )}
+                {uploadMajorTopics.length > 0 &&
+                  uploadMinorTopics.length > 0 && (
+                    <>
+                      <button
+                        onClick={() => {
+                          upload();
+                        }}
+                      >
+                        Upload your video
+                      </button>
+                    </>
+                  )}
               </>
             )}
             <br />

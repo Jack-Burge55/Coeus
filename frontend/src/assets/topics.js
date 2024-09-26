@@ -3254,7 +3254,7 @@ const topics = [
     "subs": [
       "Child welfare",
       {
-        "name": "Comunity practice",
+        "name": "Community practice",
         "subs": ["Community organizing", "Social policy"],
       },
       "Human Services",
