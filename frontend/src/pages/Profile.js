@@ -13,13 +13,13 @@ const Profile = () => {
   const { coeusUser, setCoeusUser } = useContext(UserContext);
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState("");
-  const [uploadErrorMsg, setUploadErrorMsg] = useState("");
   const [profileVideos, setProfileVideos] = useState([]);
   const [profileLikedVideos, setProfileLikedVideos] = useState([]);
   const [textInput, setTextInput] = useState("");
   const [uploadInput, setUploadInput] = useState("");
   const [uploadMajorTopics, setUploadMajorTopics] = useState([]);
   const [uploadMinorTopics, setUploadMinorTopics] = useState([]);
+  const [minorMoreTopics, setMinorMoreTopics] = useState([]);
   const [profileInfo, setProfileInfo] = useState(null);
   const thisProfile = window.location.href.split("profile/")[1];
   const usersProfile = thisProfile === coeusUser?.userId;
@@ -129,13 +129,6 @@ const Profile = () => {
 
   const toggleMajorTopic = (topic) => {
     if (uploadMajorTopics.includes(topic)) {
-      let newMinors = uploadMinorTopics;
-      topics[topic].forEach((minor) => {
-        if (newMinors.includes(minor)) {
-          newMinors = newMinors.filter((element) => element !== minor);
-        }
-      });
-      setUploadMinorTopics(newMinors);
       setUploadMajorTopics(
         uploadMajorTopics.filter((element) => element !== topic)
       );
@@ -152,6 +145,70 @@ const Profile = () => {
     } else {
       setUploadMinorTopics([...uploadMinorTopics, topic]);
     }
+  };
+
+  // function to toggle state for expanded topics
+  const toggleMinorMore = (topic) => {
+    if (minorMoreTopics.includes(topic)) {
+      setMinorMoreTopics(
+        minorMoreTopics.filter((element) => element !== topic)
+      );
+    } else {
+      setMinorMoreTopics([...minorMoreTopics, topic]);
+    }
+  };
+
+  const recursiveExpansion = (obj) => {
+    const { name, subs } = obj;
+    const isMinorSelected = uploadMinorTopics.includes(name);
+    const isMinorMoreSelected = minorMoreTopics.includes(name);
+    return (
+      <div key={name}>
+        <button
+          onClick={() => toggleMinorTopic(name)}
+          key={name}
+          className={isMinorSelected ? "selectedMinor" : undefined}
+          disabled={
+            uploadMinorTopics.length === MINOR_TOPIC_LIMIT && !isMinorSelected
+          }
+        >
+          {name}
+        </button>
+        <button
+          onClick={() => toggleMinorMore(name)}
+          key={name + "more"}
+          className={isMinorMoreSelected ? "expandedMore" : undefined}
+          // disabled={
+          //   uploadMinorTopics.length === MINOR_TOPIC_LIMIT && !isMinorSelected
+          // }
+        >
+          {name + " more"}
+        </button>
+        {isMinorMoreSelected &&
+          subs.map((sub) => {
+            const isSubSelected = uploadMinorTopics.includes(sub)
+            if (typeof sub === "string") {
+              return (
+                <div key={sub}>
+                  <button
+                    onClick={() => toggleMinorTopic(sub)}
+                    key={sub}
+                    className={isSubSelected ? "selectedMinor" : undefined}
+                    disabled={
+                      uploadMinorTopics.length === MINOR_TOPIC_LIMIT &&
+                      !isSubSelected
+                    }
+                  >
+                    {sub}
+                  </button>
+                </div>
+              );
+            } else {
+              return recursiveExpansion(sub);
+            }
+          })}
+      </div>
+    );
   };
 
   const upload = async () => {
@@ -173,6 +230,7 @@ const Profile = () => {
           setUploadInput("");
           setUploadMajorTopics([]);
           setUploadMinorTopics([]);
+          setMinorMoreTopics([]);
           getUser(setCoeusUser);
         })
         .catch((err) => {
@@ -286,72 +344,72 @@ const Profile = () => {
                 >
                   Not the right video?
                 </button>
-                <p>Pick up to {MAJOR_TOPIC_LIMIT} major topics (min. 1)</p>
-                <br />
-                {Object.keys(topics).map((major) => {
-                  const selectedTopic = uploadMajorTopics.includes(major);
+                {topics.map((major) => {
+                  const { name: majorTopic, subs: minorTopics } = major;
+                  const isMajorSelected =
+                    uploadMajorTopics.includes(majorTopic);
                   return (
-                    <button
-                      onClick={() => toggleMajorTopic(major)}
-                      key={major}
-                      disabled={
-                        uploadMajorTopics.length === MAJOR_TOPIC_LIMIT &&
-                        !selectedTopic
-                      }
-                      className={selectedTopic ? "selectedTopic" : ""}
-                    >
-                      {major}
-                    </button>
-                  );
-                })}
-                <br />
-                {uploadMajorTopics.length > 0 && (
-                  <p>Pick up to {MINOR_TOPIC_LIMIT} minor topics (min. 1)</p>
-                )}
-                {uploadMajorTopics.map((major) => {
-                  return (
-                    <div key={major}>
-                      <h2>{major}</h2>
-                      {topics[major].map((minor) => {
-                        const selectedTopic = uploadMinorTopics.includes(minor);
-                        return (
-                          <button
-                            key={minor}
-                            disabled={
-                              uploadMinorTopics.length === MINOR_TOPIC_LIMIT &&
-                              !selectedTopic
-                            }
-                            onClick={() => toggleMinorTopic(minor)}
-                            className={selectedTopic ? "selectedTopic" : ""}
-                          >
-                            {minor}
-                          </button>
-                        );
-                      })}
+                    <div key={majorTopic}>
+                      <button
+                        onClick={() => toggleMajorTopic(majorTopic)}
+                        className={
+                          isMajorSelected ? "selectedMajor" : undefined
+                        }
+                        disabled={
+                          uploadMajorTopics.length === MAJOR_TOPIC_LIMIT &&
+                          !isMajorSelected
+                        } //majorTopic button
+                      >
+                        {majorTopic}
+                      </button>
+                      <br />
+                      {isMajorSelected &&
+                        minorTopics.map((minTopic) => {
+                          if (typeof minTopic === "string") {
+                            const isMinorSelected =
+                              uploadMinorTopics.includes(minTopic);
+                            return (
+                              <button
+                                onClick={() => toggleMinorTopic(minTopic)}
+                                key={minTopic}
+                                className={
+                                  isMinorSelected ? "selectedMinor" : undefined
+                                }
+                                disabled={
+                                  uploadMinorTopics.length ===
+                                    MINOR_TOPIC_LIMIT && !isMinorSelected
+                                }
+                              >
+                                {minTopic}
+                              </button> //minorTopic button
+                            );
+                          } else {
+                            return recursiveExpansion(minTopic);
+                          }
+                        })}
+                      <br />
+                      <br />
                     </div>
                   );
                 })}
+                <h3>Major topics</h3>
+                {uploadMajorTopics.map((major) => {
+                  return <p key={major}>{major}</p>;
+                })}
+                <h3>Minor topics</h3>
+                {uploadMinorTopics.map((minor) => {
+                  return <p key={minor}>{minor}</p>;
+                })}
                 <br />
-                {uploadErrorMsg && <h3>{uploadErrorMsg}</h3>}
-                <button
-                  onClick={() => {
-                    if (uploadMajorTopics.length === 0) {
-                      setUploadErrorMsg(
-                        "At least one major topic must be selected before upload"
-                      );
-                    } else {
-                      if (uploadMinorTopics.length === 0) {
-                        setUploadErrorMsg(
-                          "At least one minor topic must be selected before upload"
-                        );
-                      } else {
-                        upload();
-                      }
-                    }
-                  }}
-                >
-                  Upload your video
-                </button>
+                {uploadMajorTopics > 0 && uploadMinorTopics > 0 && (
+                  <button
+                    onClick={() => {
+                      upload();
+                    }}
+                  >
+                    Upload your video
+                  </button>
+                )}
               </>
             )}
             <br />
