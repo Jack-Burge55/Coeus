@@ -137,10 +137,11 @@ const Profile = () => {
     }
   };
 
+  // toggle selected minor topics
   const toggleMinorTopic = (topic) => {
-    if (uploadMinorTopics.includes(topic)) {
+    if (minorTopicsContains(topic)) {
       setUploadMinorTopics(
-        uploadMinorTopics.filter((element) => element !== topic)
+        uploadMinorTopics.filter((element) => JSON.stringify(element) !== JSON.stringify(topic))
       );
     } else {
       setUploadMinorTopics([...uploadMinorTopics, topic]);
@@ -158,14 +159,21 @@ const Profile = () => {
     }
   };
 
-  const recursiveExpansion = (obj) => {
+  const minorTopicsContains = (element) => {    
+    return uploadMinorTopics.filter(minor => {      
+      return JSON.stringify(element) === JSON.stringify(minor)
+    }).length > 0
+  }
+
+  const recursiveExpansion = (obj, currentMinor) => {    
     const { name, subs } = obj;
-    const isMinorSelected = uploadMinorTopics.includes(name);
+    const isMinorSelected = minorTopicsContains([...currentMinor, name]);
     const isMinorMoreSelected = minorMoreTopics.includes(name);
+    
     return (
       <div key={name}>
         <button
-          onClick={() => toggleMinorTopic(name)}
+          onClick={() => toggleMinorTopic([...currentMinor, name])}
           key={name}
           className={isMinorSelected ? "selectedMinor" : undefined}
           disabled={
@@ -178,20 +186,17 @@ const Profile = () => {
           onClick={() => toggleMinorMore(name)}
           key={name + "more"}
           className={isMinorMoreSelected ? "expandedMore" : undefined}
-          // disabled={
-          //   uploadMinorTopics.length === MINOR_TOPIC_LIMIT && !isMinorSelected
-          // }
         >
           {name + " more"}
         </button>
         {isMinorMoreSelected &&
           subs.map((sub) => {
-            const isSubSelected = uploadMinorTopics.includes(sub)
+            const isSubSelected = minorTopicsContains([...currentMinor, name, sub])
             if (typeof sub === "string") {
               return (
                 <div key={sub}>
                   <button
-                    onClick={() => toggleMinorTopic(sub)}
+                    onClick={() => toggleMinorTopic([...currentMinor, name, sub])}
                     key={sub}
                     className={isSubSelected ? "selectedMinor" : undefined}
                     disabled={
@@ -204,7 +209,7 @@ const Profile = () => {
                 </div>
               );
             } else {
-              return recursiveExpansion(sub);
+              return recursiveExpansion(sub, [...currentMinor, name]);
             }
           })}
       </div>
@@ -367,10 +372,10 @@ const Profile = () => {
                         minorTopics.map((minTopic) => {
                           if (typeof minTopic === "string") {
                             const isMinorSelected =
-                              uploadMinorTopics.includes(minTopic);
+                              minorTopicsContains([majorTopic, minTopic])
                             return (
                               <button
-                                onClick={() => toggleMinorTopic(minTopic)}
+                                onClick={() => toggleMinorTopic([majorTopic, minTopic])}
                                 key={minTopic}
                                 className={
                                   isMinorSelected ? "selectedMinor" : undefined
@@ -384,7 +389,7 @@ const Profile = () => {
                               </button> //minorTopic button
                             );
                           } else {
-                            return recursiveExpansion(minTopic);
+                            return recursiveExpansion(minTopic, [majorTopic]);
                           }
                         })}
                       <br />
@@ -398,7 +403,7 @@ const Profile = () => {
                 })}
                 <h3>Minor topics</h3>
                 {uploadMinorTopics.map((minor) => {
-                  return <p key={minor}>{minor}</p>;
+                  return <p key={minor}>{minor.join(" -> ")}</p>;
                 })}
                 <br />
                 {uploadMajorTopics > 0 && uploadMinorTopics > 0 && (
