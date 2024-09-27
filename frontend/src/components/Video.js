@@ -13,7 +13,7 @@ const Video = ({ url, majorTopics, minorTopics }) => {
       <h3>{majorTopics.join(", ")}</h3>
       {minorTopics.map((minor) => (
         <div>
-          <h5 key={minor}>{minor.join(" → ")}</h5>
+          <h5 key={minor}>{typeof minor !== "string" && minor.join(" → ")}</h5>
         </div>
       ))}
     </>

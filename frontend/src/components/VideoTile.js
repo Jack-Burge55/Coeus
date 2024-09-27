@@ -7,9 +7,9 @@ import toggleLikeVideo from "../userApi/toggleLikeVideo";
 
 const VideoTile = ({ url, videoId, majorTopics, minorTopics, usersOwn }) => {
   
-  const {coeusUser, setCoeusUser} = useContext(UserContext);
+  const {coeusUser, setCoeusUser} = useContext(UserContext);  
   const action = !coeusUser.likedVideos.includes(videoId)
-  console.log(minorTopics, action);
+  
   return (
     <>
       <Video

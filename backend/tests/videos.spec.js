@@ -132,6 +132,15 @@ describe("/api/v1/videos", () => {
     expect(res.body.count).toBe(0);
   });
 
+  // getAllVideos
+  it("Should get all", async () => {
+    const res = await request(app)
+    .get("/api/v1/videos/all")
+    .set({ authorisation: `Bearer ${token1}` });
+    expect(res.body.videos.length).toBe(1);
+    expect(res.body.videos[0]._id).toBe(videoId)
+  })
+
   // deleteVideo
   it("Should delete a valid video", async () => {
     const res = await request(app)
