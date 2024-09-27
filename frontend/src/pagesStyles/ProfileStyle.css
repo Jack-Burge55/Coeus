@@ -1,3 +1,9 @@
-.selectedTopic {
-  background-color: green;
+.selectedMajor {
+  background-color: rgb(0, 204, 0);
+}
+.selectedMinor {
+  background-color: rgb(148, 255, 148);
+}
+.expandedMore {
+  background-color: rgb(244, 255, 94);
 }
