@@ -7,7 +7,7 @@ import toggleLikeVideo from "../userApi/toggleLikeVideo";
 import getUser from "../userApi/getUser";
 import * as constants from "../constants";
 
-const VideoTile = ({ url, videoId, majorTopics, minorTopics, likeCount, usersOwn }) => {
+const VideoTile = ({ url, videoId, majorTopics, minorTopics, likeCount, usersOwn, uploadedByName }) => {
   const { coeusUser, setCoeusUser } = useContext(UserContext);
   const action = !coeusUser.likedVideos.includes(videoId);
 
@@ -34,6 +34,7 @@ const VideoTile = ({ url, videoId, majorTopics, minorTopics, likeCount, usersOwn
 
   return (
     <>
+    {uploadedByName && <p>{uploadedByName}</p>}
       <Video
         url={url}
         majorTopics={majorTopics}

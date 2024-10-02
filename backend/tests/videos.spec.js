@@ -53,7 +53,8 @@ describe("/api/v1/videos", () => {
       .send({
         url: dummyVideoUrl,
         majorTopics: ["someMajor"],
-        minorTopics: ["someMinorOne", "someMinorTwo"]
+        minorTopics: ["someMinorOne", "someMinorTwo"],
+        uploadedByName: newUser.username
       })
       .set({ authorisation: `Bearer ${token}` });
     
@@ -62,13 +63,15 @@ describe("/api/v1/videos", () => {
     expect(res.status).toBe(201);
     expect(res.body.video.url).toBe(dummyVideoUrl);
     expect(res.body.video.uploadedBy).toBe(userId);
+    expect(res.body.video.uploadedByName).toBe(newUser.username);
   });
 
   it("Should raise an error if a duplicate video is uploaded", async () => {
     const body = {
       url: dummyVideoUrl,
       majorTopics: ["someMajor"],
-      minorTopics: ["someMinorOne", "someMinorTwo"]
+      minorTopics: ["someMinorOne", "someMinorTwo"],
+      uploadedByName: newUser.username
     };
     const res = await request(app)
       .post("/api/v1/videos")

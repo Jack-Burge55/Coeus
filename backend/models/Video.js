@@ -30,6 +30,10 @@ const VideoSchema = new mongoose.Schema(
       ref: "User",
       required: [true, "please provide user"]
     },
+    uploadedByName: {
+      type: String,
+      required: [true, "please provide username"]
+    }
   },
   { timestamps: true }
 );
