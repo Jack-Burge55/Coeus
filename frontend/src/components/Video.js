@@ -11,8 +11,8 @@ const Video = ({ url, majorTopics, minorTopics }) => {
         allowFullScreen
       ></iframe>
       <h3>{majorTopics.join(", ")}</h3>
-      {minorTopics.map((minor) => (
-        <div>
+      {minorTopics.map((minor, index) => (
+        <div key={index}>
           <h5 key={minor}>{typeof minor !== "string" && minor.join(" → ")}</h5>
         </div>
       ))}
