@@ -41,6 +41,7 @@ beforeAll(async () => {
       url: dummyVideoUrl,
       majorTopics: ["someMajor"],
       minorTopics: ["someMinorOne", "someMinorTwo"],
+      uploadedByName: newUser.username
     })
     .set({ authorisation: `Bearer ${secondToken}` });
 

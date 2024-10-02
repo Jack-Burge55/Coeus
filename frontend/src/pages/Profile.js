@@ -262,6 +262,7 @@ const Profile = () => {
         },
         body: JSON.stringify({
           url: uploadInput,
+          uploadedByName: coeusUser.username,
           majorTopics: uploadMajorTopics,
           minorTopics: uploadMinorTopics,
         }),
@@ -461,6 +462,7 @@ const Profile = () => {
                     minorTopics={video.minorTopics}
                     likeCount={video.likeCount}
                     usersOwn={usersProfile}
+                    uploadedByName={video.uploadedByName}
                   ></VideoTile>
                 </div>
               );

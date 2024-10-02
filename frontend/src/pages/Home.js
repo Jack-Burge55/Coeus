@@ -57,6 +57,7 @@ const Home = () => {
                 minorTopics={video.minorTopics}
                 likeCount={video.likeCount}
                 usersOwn={video.uploadedBy === localStorage.userId}
+                uploadedByName={video.uploadedByName}
               />
             );
           })}
