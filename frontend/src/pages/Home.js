@@ -1,20 +1,17 @@
-import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { UserContext } from "../UserContext";
+import { useEffect, useState } from "react";
 import * as constants from "../constants";
 import { VideoTile } from "../components";
 
 const Home = () => {
-  const navigate = useNavigate();
-  const { coeusUser, setCoeusUser } = useContext(UserContext);
   const [recentVideos, setRecentVideos] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
   const [videoPage, setVideoPage] = useState(1);
+  const [videoLimitReached, setVideoLimitReached] = useState(false);
 
   useEffect(() => {
     try {
       const url = new URL(
-        `${constants.usedUrl}/api/v1/videos/all?limit=4&page=${videoPage}`
+        `${constants.usedUrl}/api/v1/videos/all?limit=5&page=${videoPage}`
       );
       fetch(url, {
         method: "GET",
@@ -31,51 +28,48 @@ const Home = () => {
           return response.json();
         })
         .then((data) => {
-          setRecentVideos(data.videos);
+          if (data) {
+            const videos = data.videos;
+            const isLimitReached = videos.length < 5;
+            setRecentVideos(
+              isLimitReached ? videos : videos.slice(0, videos.length - 1)
+            );
+            setVideoLimitReached(isLimitReached);
+          }
         });
     } catch (error) {}
   }, [videoPage]);
-
-  const findUsers = () => {
-    navigate(`/find-users`);
-  };
-
-  const signOut = () => {
-    setCoeusUser(null);
-    localStorage.removeItem("userToken");
-    localStorage.removeItem("userId");
-    navigate("/login");
-  };
-
-  const goToProfile = () => {
-    navigate(`/profile/${coeusUser.userId}`);
-  };
-
-  if (!coeusUser) return <h2>Loading</h2>;
 
   return (
     <div>
       <h1>Home</h1>
       {errorMsg && <h2>{errorMsg}</h2>}
-      <button onClick={() => findUsers()}>Find Users</button>
-      <button onClick={() => signOut()}>Sign Out</button>
-      <button onClick={() => goToProfile()}>Go To Your Profile</button>
-      {recentVideos.length > 0 && coeusUser && (
+      {recentVideos.length > 0 && (
         <div>
           <h2>Recent videos you might like</h2>
-          {recentVideos.map(vid => {
-            return <VideoTile key={vid._id} url={vid.url} videoId={vid._id} majorTopics={vid.majorTopics} minorTopics={vid.minorTopics} usersOwn={vid.uploadedBy === localStorage.userId} />
+          {recentVideos.map((video) => {
+            return (
+              <VideoTile
+                key={video._id}
+                url={video.url}
+                videoId={video._id}
+                majorTopics={video.majorTopics}
+                minorTopics={video.minorTopics}
+                likeCount={video.likeCount}
+                usersOwn={video.uploadedBy === localStorage.userId}
+              />
+            );
           })}
           {videoPage > 1 && (
             <button onClick={() => setVideoPage(videoPage - 1)}>
               Previous Videos (Page {videoPage - 1})
             </button>
           )}
-          {
+          {!videoLimitReached && (
             <button onClick={() => setVideoPage(videoPage + 1)}>
               More Videos (Page {videoPage + 1})
             </button>
-          }
+          )}
         </div>
       )}
     </div>

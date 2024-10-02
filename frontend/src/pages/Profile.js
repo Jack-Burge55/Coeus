@@ -6,7 +6,7 @@ import toggleFollowUser from "../userApi/toggleFollowUser";
 import getUser from "../userApi/getUser";
 import * as constants from "../constants";
 import "../pagesStyles/ProfileStyle.css";
-import { Video, VideoTile } from "../components";
+import { Loading, Video, VideoTile } from "../components";
 import topics from "../assets/topics";
 
 const Profile = () => {
@@ -281,30 +281,9 @@ const Profile = () => {
     }
   };
 
-  // call delete video API
-  const deleteVideo = async (videoId) => {
-    try {
-      const url = new URL(`${constants.usedUrl}/api/v1/videos/`);
-      await fetch(url, {
-        method: "DELETE",
-        headers: {
-          "Content-type": "application/json; charset=UTF-8",
-          authorisation: `Bearer ${localStorage.getItem("userToken")}`,
-        },
-        body: JSON.stringify({
-          videoId,
-        }),
-      })
-        .then(getUser(setCoeusUser))
-        .catch((err) => console.log(err));
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   if (errorMsg) return <h2>{errorMsg}</h2>;
 
-  return coeusUser && profileInfo ? (
+  return profileInfo ? (
     <>
       <div>
         <h1>{profileInfo.username}'s profile</h1>
@@ -480,13 +459,9 @@ const Profile = () => {
                     videoId={video._id}
                     majorTopics={video.majorTopics}
                     minorTopics={video.minorTopics}
+                    likeCount={video.likeCount}
                     usersOwn={usersProfile}
                   ></VideoTile>
-                  {usersProfile && (
-                    <button onClick={() => deleteVideo(video._id)}>
-                      Delete Video
-                    </button>
-                  )}
                 </div>
               );
             })}
@@ -507,6 +482,7 @@ const Profile = () => {
                     videoId={video._id}
                     majorTopics={video.majorTopics}
                     minorTopics={video.minorTopics}
+                    likeCount={video.likeCount}
                     usersOwn={false}
                   ></VideoTile>
                 </div>
@@ -514,11 +490,10 @@ const Profile = () => {
             })}
           </>
         )}
-        <button onClick={() => navigate("/")}>Back to home</button>
       </div>
     </>
   ) : (
-    <h2>Loading...</h2>
+    <Loading />
   );
 };
 

@@ -21,7 +21,11 @@ const getUser = async (req, res, next) => {
 };
 
 const getAllUsers = async (req, res, next) => {
-  const users = await User.find();
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) + 1 || 11;
+  const skip = (page - 1) * Number(req.query.limit);
+
+  const users = await User.find({}).skip(skip).limit(limit);
   if (!users) {
     return next(new BadRequestError("No users found"));
   }
