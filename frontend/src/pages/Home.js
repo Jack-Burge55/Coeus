@@ -11,7 +11,7 @@ const Home = () => {
   useEffect(() => {
     try {
       const url = new URL(
-        `${constants.usedUrl}/api/v1/videos/all?limit=5&page=${videoPage}`
+        `${constants.usedUrl}/api/v1/videos/all-other?limit=5&page=${videoPage}`
       );
       fetch(url, {
         method: "GET",
@@ -56,7 +56,6 @@ const Home = () => {
                 majorTopics={video.majorTopics}
                 minorTopics={video.minorTopics}
                 likeCount={video.likeCount}
-                usersOwn={video.uploadedBy === localStorage.userId}
                 uploadedByName={video.uploadedByName}
               />
             );

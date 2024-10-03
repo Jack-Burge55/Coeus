@@ -1,6 +1,6 @@
 import "./App.css";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { Home, Register, Login, Profile, FindUsers } from "./pages";
+import { Home, Register, Login, Profile, Topic, FindUsers } from "./pages";
 import { Loading, Navbar } from "./components";
 import { useEffect, useState } from "react";
 import { UserContext } from "./UserContext";
@@ -33,6 +33,7 @@ function App() {
           <Routes>
             <Route exact path="/" element={<Home />} />
             <Route exact path="/find-users" element={<FindUsers />} />
+            <Route exact path="/topic/:topic-name" element={<Topic />} />
             <Route exact path="/profile/:id" element={<Profile />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

@@ -17,6 +17,7 @@ const newUser1 = {
 let token, token1, userId, userId1, videoId;
 const badVideoId = "22ea8048344ad812a4de3c99";
 const dummyVideoUrl = "dQw4w9WgXcQ?si=u_2xEGULAg4a8k--";
+const videoMajor = ["someMajor"];
 
 beforeAll(async () => {
   const res = await request(app).post("/api/v1/auth/register").send(newUser);
@@ -45,20 +46,20 @@ describe("/api/v1/videos", () => {
   // uploadVideo
   it("Should allow a user to upload a valid video", async () => {
     const likeRes = await request(app)
-    .patch(`/api/v1/users/like/${videoId}`)
-    .set({ authorisation: `Bearer ${token}` });
-    
+      .patch(`/api/v1/users/like/${videoId}`)
+      .set({ authorisation: `Bearer ${token}` });
+
     const res = await request(app)
       .post("/api/v1/videos")
       .send({
         url: dummyVideoUrl,
-        majorTopics: ["someMajor"],
+        majorTopics: videoMajor,
         minorTopics: ["someMinorOne", "someMinorTwo"],
-        uploadedByName: newUser.username
+        uploadedByName: newUser.username,
       })
       .set({ authorisation: `Bearer ${token}` });
-    
-    videoId = res.body.video._id
+
+    videoId = res.body.video._id;
 
     expect(res.status).toBe(201);
     expect(res.body.video.url).toBe(dummyVideoUrl);
@@ -69,9 +70,9 @@ describe("/api/v1/videos", () => {
   it("Should raise an error if a duplicate video is uploaded", async () => {
     const body = {
       url: dummyVideoUrl,
-      majorTopics: ["someMajor"],
+      majorTopics: videoMajor,
       minorTopics: ["someMinorOne", "someMinorTwo"],
-      uploadedByName: newUser.username
+      uploadedByName: newUser.username,
     };
     const res = await request(app)
       .post("/api/v1/videos")
@@ -82,24 +83,24 @@ describe("/api/v1/videos", () => {
   });
 
   // getVideo
-  it("Should get a video given a valid videoId", async () => {    
+  it("Should get a video given a valid videoId", async () => {
     const res = await request(app)
       .get(`/api/v1/videos`)
-      .send({"videoId": videoId})
+      .send({ videoId: videoId })
       .set({ authorisation: `Bearer ${token}` });
-      
-      expect(res.status).toBe(200)
-      expect(res.body.video._id).toBe(videoId)
-  })
+
+    expect(res.status).toBe(200);
+    expect(res.body.video._id).toBe(videoId);
+  });
 
   it("Should return an error given an invalid videoId", async () => {
     const res = await request(app)
       .get(`/api/v1/videos`)
-      .send({"videoId": badVideoId})
+      .send({ videoId: badVideoId })
       .set({ authorisation: `Bearer ${token}` });
-      expect(res.status).toBe(400)
-      expect(res.body.msg).toBe(`No video with id: ${badVideoId} found`)
-  })
+    expect(res.status).toBe(400);
+    expect(res.body.msg).toBe(`No video with id: ${badVideoId} found`);
+  });
 
   // getAllVideosByUser
   it("Should get all videos given a valid user", async () => {
@@ -116,15 +117,15 @@ describe("/api/v1/videos", () => {
   // getAllVideosByLike
   it("Should get all videos liked by a user", async () => {
     await request(app)
-    .patch(`/api/v1/users/like/${videoId}`)
-    .set({ authorisation: `Bearer ${token1}` });
+      .patch(`/api/v1/users/like/${videoId}`)
+      .set({ authorisation: `Bearer ${token1}` });
 
     const res = await request(app)
-    .get("/api/v1/videos/likes")
-    .set({ authorisation: `Bearer ${token1}` });
+      .get("/api/v1/videos/likes")
+      .set({ authorisation: `Bearer ${token1}` });
     expect(res.body.videos.length).toBe(1);
-    expect(res.body.videos[0]._id).toBe(videoId)
-  })
+    expect(res.body.videos[0]._id).toBe(videoId);
+  });
 
   it("Should return 0 videos given an invalid user", async () => {
     const res = await request(app)
@@ -135,14 +136,50 @@ describe("/api/v1/videos", () => {
     expect(res.body.count).toBe(0);
   });
 
+  // getAllVideosByTopic
+  it("Should get all videos given a valid topic", async () => {
+    const res = await request(app)
+      .get(`/api/v1/videos/topic/${videoMajor[0]}`)
+      .set({ authorisation: `Bearer ${token}` });
+
+    expect(res.body.videos.length).toBe(1);
+    expect(res.body.videos[0]._id).toBe(videoId);
+  });
+
+  it("Should return an error given an invalid topic", async () => {
+    const res = await request(app)
+      .get(`/api/v1/videos/topic/badTopic`)
+      .set({ authorisation: `Bearer ${token}` });
+    expect(res.status).toBe(400);
+    expect(res.body.msg).toBe("No videos with topic badTopic found");
+  });
+
+  // getAllOtherVideos
+  it("Should get all videos except those of user", async () => {
+    const res1 = await request(app)
+      .get(`/api/v1/videos/all-other`)
+      .set({ authorisation: `Bearer ${token1}` });
+
+    expect(res1.body.videos.length).toBe(1);
+    expect(res1.body.videos[0]._id).toBe(videoId);
+  });
+
+  it("Should return an error given no videos", async () => {
+    const res = await request(app)
+      .get(`/api/v1/videos/all-other`)
+      .set({ authorisation: `Bearer ${token}` });
+    expect(res.status).toBe(400);
+    expect(res.body.msg).toBe("No videos found");
+  });
+
   // getAllVideos
   it("Should get all", async () => {
     const res = await request(app)
-    .get("/api/v1/videos/all")
-    .set({ authorisation: `Bearer ${token1}` });
-    expect(res.body.videos.length).toBe(1);
-    expect(res.body.videos[0]._id).toBe(videoId)
-  })
+      .get("/api/v1/videos/all")
+      .set({ authorisation: `Bearer ${token1}` });
+    expect(res.body.videos.length).toBe(1);    
+    expect(res.body.videos[0]._id).toBe(videoId);
+  });
 
   // deleteVideo
   it("Should delete a valid video", async () => {

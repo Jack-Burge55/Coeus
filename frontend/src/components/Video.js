@@ -1,4 +1,7 @@
+import { useNavigate } from "react-router-dom";
+
 const Video = ({ url, majorTopics, minorTopics }) => {
+  const navigate = useNavigate()
   return (
     <>
       <iframe
@@ -10,7 +13,13 @@ const Video = ({ url, majorTopics, minorTopics }) => {
         referrerPolicy="strict-origin-when-cross-origin"
         allowFullScreen
       ></iframe>
-      <h3>{majorTopics.join(", ")}</h3>
+      {majorTopics.map((major) => {        
+        return (
+          <div key={major}>
+            <button onClick={() => navigate(`/topic/${major.toLowerCase().split(" ").join("-")}`)}>{major}</button>
+          </div>
+        );
+      })}
       {minorTopics.map((minor, index) => (
         <div key={index}>
           <h5 key={minor}>{typeof minor !== "string" && minor.join(" → ")}</h5>
